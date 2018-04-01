@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="Compliance 360 LDAP Sync Service" Language="1033" Version="1.0.0.0" Manufacturer="SAI Global"
+           UpgradeCode="e5a9f204-1c8b-4eeb-93ad-b6549a1be680">
+    <Package Id="*" InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+    <WixVariable Id="WixUIBannerBmp" Value="images\banner.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="images\setup.bmp" />
+    <WixVariable Id="WixUILicenseRtf" Value="images\ULA.rtf" />
+
+    <Property Id="ARPPRODUCTICON" Value="MainIcon.ico" />
+    <CustomTable Id="_VsdLaunchCondition">
+      <Column Id="Condition" Type="string" Width="255" PrimaryKey="yes" />
+      <Column Id="Description" Localizable="yes" Type="string" Width="255" />
+      <Column Id="Url" Type="string" Width="0" />
+      <Row>
+        <Data Column="Condition"><![CDATA[VSDFXAvailable]]></Data>
+        <Data Column="Description"><![CDATA[[VSDNETURLMSG]]]></Data>
+        <Data Column="Url"><![CDATA[http://go.microsoft.com/fwlink/?LinkId=9832]]></Data>
+      </Row>
+    </CustomTable>
+
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+
+    <!-- Media Id="1" Cabinet="SyncSetup.cab" EmbedCab="yes" DiskPrompt="DISK?"/ -->
+
+    <Icon Id="MainIcon.ico" SourceFile="images\MainIcon.ico" />
+    <MediaTemplate />
+
+    <Feature Id="ProductFeature" Title="Compliance 360 LDAP Sync Service" Level="1">
+      <ComponentGroupRef Id="EmployeeSyncComponents" />
+    </Feature>
+
+    <Property Id="FRAMEWORK470">
+      <RegistrySearch Id="Framework470Registry" Type="raw"
+                      Root="HKLM" Key="Software\Microsoft\NET Framework Setup\NDP\v4\Full"
+                      Name="Release" />
+    </Property>
+
+    <Condition Message="This application requires the .NET Framework 4.7.0 or higher to be installed.">
+      FRAMEWORK470 >= "#460798"
+    </Condition>
+
+    <Property Id="WIXUI_INSTALLDIR" Value="SAIGlobal" />
+
+    <UIRef Id="WixUI_Mondo" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+
+    <CustomAction Id="InstallService" Impersonate="no"
+                  ExeCommand="cmd.exe /c &quot;&quot;[INSTALLFOLDER]Compliance360.EmployeeSyncService.exe&quot; install&quot;"
+                  Directory="INSTALLFOLDER" Execute="deferred" Return="ignore" />
+    <CustomAction Id="UninstallService" Impersonate="no"
+                  ExeCommand="cmd.exe /c &quot;&quot;[INSTALLFOLDER]Compliance360.EmployeeSyncService.exe&quot; uninstall&quot;"
+                  Directory="INSTALLFOLDER" Execute="deferred" Return="ignore" />
+    <InstallExecuteSequence>
+      <Custom Action='UninstallService' After='InstallInitialize'>$Compliance360.EmployeeSyncService.exe=2</Custom>
+      <Custom Action='InstallService' Before='InstallFinalize'>NOT Installed</Custom>
+    </InstallExecuteSequence>
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="SAIGlobal" Name="SAI Global">
+          <Directory Id="INSTALLFOLDER" Name="Compliance360 LDAP Sync" />
+        </Directory>
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="EmployeeSyncComponents" Directory="INSTALLFOLDER">
+      <Component Id="Compliance360.EmployeeSyncService.exe" Guid="d96a4565-1cb2-4ce3-ba1a-47b127ae6e21">
+        <File Id="Compliance360.EmployeeSyncService.exe" Name="Compliance360.EmployeeSyncService.exe" DiskId="1"
+              Source="Files\Compliance360.EmployeeSyncService.exe" KeyPath="yes">
+        </File>
+      </Component>
+      <Component Id="Compliance360.EmployeeSync.Library.dll" Guid="89341e84-8df9-4a49-beb0-9853403e421d">
+        <File Id="Compliance360.EmployeeSync.Library.dll" Name="Compliance360.EmployeeSync.Library.dll" DiskId="1"
+              Source="Files\Compliance360.EmployeeSync.Library.dll" KeyPath="yes">
+        </File>
+      </Component>
+      <Component Id="Compliance360.EmployeeSync.ApiV2Stream.dll" Guid="1b0eef37-5d50-4cf7-a46d-c6d9e6f15b1d">
+        <File Id="Compliance360.EmployeeSync.ApiV2Stream.dll" Name="Compliance360.EmployeeSync.ApiV2Stream.dll" DiskId="1"
+              Source="Files\Compliance360.EmployeeSync.ApiV2Stream.dll" KeyPath="yes">
+        </File>
+      </Component>
+      <Component Id="Compliance360.EmployeeSyncService.exe.config" Guid="f5f74b63-6ca2-46a3-b793-6e69130192e4">
+        <File Id="Compliance360.EmployeeSyncService.exe.config" Name="Compliance360.EmployeeSyncService.exe.config"
+              DiskId="1" Source="Files\Compliance360.EmployeeSyncService.exe.config" KeyPath="yes">
+        </File>
+      </Component>
+      <Component Id="Newtonsoft.Json.dll" Guid="1839e248-525a-47e3-b1c1-71981b942830">
+        <File Id="Newtonsoft.Json.dll" Name="Newtonsoft.Json.dll" DiskId="1" Source="Files\Newtonsoft.Json.dll"
+              KeyPath="yes">
+        </File>
+      </Component>
+      <Component Id="NLog.config" Guid="bc61d68c-5fa3-4db6-9be2-e80f4bca9478">
+        <File Id="NLog.config" Name="NLog.config" DiskId="1" Source="Files\NLog.config" KeyPath="yes"></File>
+      </Component>
+      <Component Id="NLog.dll" Guid="c446029f-ea5f-4755-9533-764b54e6cd97">
+        <File Id="NLog.dll" Name="NLog.dll" DiskId="1" Source="Files\NLog.dll" KeyPath="yes"></File>
+      </Component>
+      <Component Id="nunit.framework.dll" Guid="d979a76a-045b-4c40-abcb-1b604c1ab53b">
+        <File Id="nunit.framework.dll" Name="nunit.framework.dll" DiskId="1" Source="Files\nunit.framework.dll"
+              KeyPath="yes">
+        </File>
+      </Component>
+      <Component Id="Rebex.Common.dll" Guid="c2793695-0e6b-4bb1-a8e7-44093a62bc26">
+        <File Id="Rebex.Common.dll" Name="Rebex.Common.dll" DiskId="1" Source="Files\Rebex.Common.dll" KeyPath="yes"></File>
+      </Component>
+      <Component Id="Rebex.Networking.dll" Guid="064999e2-8cd5-414c-94bc-0c9a694a8d1a">
+        <File Id="Rebex.Networking.dll" Name="Rebex.Networking.dll" DiskId="1" Source="Files\Rebex.Networking.dll"
+              KeyPath="yes">
+        </File>
+      </Component>
+      <Component Id="Rebex.Sftp.dll" Guid="c96267a8-6e3e-4bde-b018-9026b4a3afbf">
+        <File Id="Rebex.Sftp.dll" Name="Rebex.Sftp.dll" DiskId="1" Source="Files\Rebex.Sftp.dll" KeyPath="yes"></File>
+      </Component>
+      <Component Id="StructureMap.dll" Guid="1f3e7726-f08a-4645-b634-e22fd74f3dfd">
+        <File Id="StructureMap.dll" Name="StructureMap.dll" DiskId="1" Source="Files\StructureMap.dll" KeyPath="yes"></File>
+      </Component>
+      <Component Id="Topshelf.dll" Guid="3176c272-ad57-4eb0-be88-480e7739c21d">
+        <File Id="Topshelf.dll" Name="Topshelf.dll" DiskId="1" Source="Files\Topshelf.dll" KeyPath="yes"></File>
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
