@@ -217,7 +217,7 @@ namespace Compliance360.EmployeeSync.Library.Data
             var addComma = false;
             if (!string.IsNullOrEmpty(ou))
             {
-                address.Append($"Ou={ou}");
+                address.Append(ou);
                 addComma = true;
             }
 

@@ -86,6 +86,11 @@
               Source="Files\Compliance360.EmployeeSync.ApiV2Stream.dll" KeyPath="yes">
         </File>
       </Component>
+      <Component Id="Compliance360.EmployeeSync.CsvStream.dll" Guid="6d32f477-b575-41de-8e9b-eca363b34a4f">
+        <File Id="Compliance360.EmployeeSync.CsvStream.dll" Name="Compliance360.EmployeeSync.CsvStream.dll" DiskId="1"
+              Source="Files\Compliance360.EmployeeSync.CsvStream.dll" KeyPath="yes">
+        </File>
+      </Component>
       <Component Id="Compliance360.EmployeeSyncService.exe.config" Guid="f5f74b63-6ca2-46a3-b793-6e69130192e4">
         <File Id="Compliance360.EmployeeSyncService.exe.config" Name="Compliance360.EmployeeSyncService.exe.config"
               DiskId="1" Source="Files\Compliance360.EmployeeSyncService.exe.config" KeyPath="yes">

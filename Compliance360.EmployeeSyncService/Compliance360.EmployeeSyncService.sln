@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.2037
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compliance360.EmployeeSync.Service", "Compliance360.EmployeeSyncService\Compliance360.EmployeeSync.Service.csproj", "{B3637667-CD47-4E47-BA0E-B90217E1F2D2}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compliance360.EmployeeSync.ApiV2Stream", "Compliance360.EmployeeSync.ApiV2Stream\Compliance360.EmployeeSync.ApiV2Stream.csproj", "{7EECBEDF-C478-48CF-A8DD-8480C63ADA6B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compliance360.EmployeeSync.ApiV2Stream.Testing", "Compliance360.EmployeeSync.ApiV2Stream.Testing\Compliance360.EmployeeSync.ApiV2Stream.Testing.csproj", "{B59BC347-21B3-4878-A0B6-4950A326F3F1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compliance360.EmployeeSync.CsvStream", "Compliance360.EmployeeSync.CsvStream\Compliance360.EmployeeSync.CsvStream.csproj", "{BE585361-7F6D-4D04-8F32-9860077736D5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -70,8 +72,19 @@ Global
 		{B59BC347-21B3-4878-A0B6-4950A326F3F1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B59BC347-21B3-4878-A0B6-4950A326F3F1}.Release|x86.ActiveCfg = Release|Any CPU
 		{B59BC347-21B3-4878-A0B6-4950A326F3F1}.Release|x86.Build.0 = Release|Any CPU
+		{BE585361-7F6D-4D04-8F32-9860077736D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE585361-7F6D-4D04-8F32-9860077736D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE585361-7F6D-4D04-8F32-9860077736D5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BE585361-7F6D-4D04-8F32-9860077736D5}.Debug|x86.Build.0 = Debug|Any CPU
+		{BE585361-7F6D-4D04-8F32-9860077736D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE585361-7F6D-4D04-8F32-9860077736D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE585361-7F6D-4D04-8F32-9860077736D5}.Release|x86.ActiveCfg = Release|Any CPU
+		{BE585361-7F6D-4D04-8F32-9860077736D5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F65A5082-A2DC-477F-A821-46E5A0AE3B17}
 	EndGlobalSection
 EndGlobal

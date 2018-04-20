@@ -19,8 +19,6 @@ namespace Compliance360.EmployeeSync.Testing
         [Test]
         public void TestGroupFilterNoPrefix()
         {
-            object currentValue = null;
-
             var result = SearchResultFactory.Construct(new 
             {
                 sAMAccountName = "leetho0",
@@ -57,8 +55,6 @@ namespace Compliance360.EmployeeSync.Testing
         [Test]
         public void TestGroupFilterWithPrefix()
         {
-            object currentValue = null;
-
             var result = SearchResultFactory.Construct(new
             {
                 sAMAccountName = "leetho0",

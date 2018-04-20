@@ -45,6 +45,14 @@
       <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
       <RefTargetDir>INSTALLFOLDER</RefTargetDir>
     </ProjectReference>
+    <ProjectReference Include="..\Compliance360.EmployeeSync.CsvStream\Compliance360.EmployeeSync.CsvStream.csproj">
+      <Name>Compliance360.EmployeeSync.CsvStream</Name>
+      <Project>{be585361-7f6d-4d04-8f32-9860077736d5}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
     <ProjectReference Include="..\Compliance360.EmployeeSync.Library\Compliance360.EmployeeSync.Library.csproj">
       <Name>Compliance360.EmployeeSync.Library</Name>
       <Project>{d2030d2e-c278-4e2e-837c-11663c431c78}</Project>

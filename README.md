@@ -236,6 +236,22 @@ Example:
 ``` xml
 <stream name="Logger" />
 ```
+
+#### CSV stream
+The CSV stream can be used to write the results of the LDAP query to a *.csv file. This is very useful for testing out the queries and configuration to ensure the specified jobs are configured correctly.
+
+Example:
+``` xml
+<stream name="Csv">
+  <settings>
+    <setting name="path" value="C:\temp\ad-output.csv" />
+  </settings>
+</stream>
+```
+Required CSV stream settings values:
+* __path:__ The full file path to the *.csv file that should be created.
+
+
 #### Compliance360ApiV2 Stream
 The Compliance 360Apiv2 Stream handles the REST API calls to the Compliance 360 application, creating, updating and deleting employee accounts based on the Active Directory information.
 

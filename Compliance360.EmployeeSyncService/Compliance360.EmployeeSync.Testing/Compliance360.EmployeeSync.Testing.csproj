@@ -93,6 +93,10 @@
       <Project>{7eecbedf-c478-48cf-a8dd-8480c63ada6b}</Project>
       <Name>Compliance360.EmployeeSync.ApiV2Stream</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Compliance360.EmployeeSync.CsvStream\Compliance360.EmployeeSync.CsvStream.csproj">
+      <Project>{be585361-7f6d-4d04-8f32-9860077736d5}</Project>
+      <Name>Compliance360.EmployeeSync.CsvStream</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Compliance360.EmployeeSync.Library\Compliance360.EmployeeSync.Library.csproj">
       <Project>{d2030d2e-c278-4e2e-837c-11663c431c78}</Project>
       <Name>Compliance360.EmployeeSync.Library</Name>
