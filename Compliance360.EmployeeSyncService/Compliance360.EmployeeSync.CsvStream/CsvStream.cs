@@ -34,9 +34,12 @@ namespace Compliance360.EmployeeSync.CsvStream
         /// </summary>
         public void Close()
         {
-            CsvFile?.Flush();
-            CsvFile?.Close();
-            CsvFile?.Dispose();
+            if (CsvFile != null)
+            {
+                CsvFile.Flush();
+                CsvFile.Close();
+                CsvFile = null;
+            }
             
             Logger.Info("Closed the Csv Stream");
         }
