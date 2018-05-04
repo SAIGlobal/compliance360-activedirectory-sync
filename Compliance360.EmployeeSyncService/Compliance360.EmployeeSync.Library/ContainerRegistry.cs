@@ -28,7 +28,6 @@ namespace Compliance360.EmployeeSync.Library
             For<IConfigurationService>().Use<ConfigurationService>();
             For<ICacheServiceFactory>().Use<CacheServiceFactory>();
             For<IActiveDirectoryService>().Use<ActiveDirectoryService>().AlwaysUnique();
-            For<ISftpService>().Use<SftpService>();
             For<IAttributeFilterFactory>().Use<AttributeFilterFactory>();
             For<IUserFilterFactory>().Use<UserFilterFactory>();
             For<IOutputStreamFactory>().Use<OutputStreamFactory>();
@@ -48,8 +47,6 @@ namespace Compliance360.EmployeeSync.Library
 
             // named streams
             For<IOutputStream>().Use<LoggerStream>().Named(PluginNameLoggerStream);
-            For<IOutputStream>().Use<SftpStream>().Named(PluginNameSftpStream).AlwaysUnique();
-            //For<IOutputStream>().Use<ApiV2Stream>().Named(PluginNameC360ApiV2Stream).AlwaysUnique();
         }
     }
 }

@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
 using Compliance360.EmployeeSync.Library.Data;
+using Compliance360.EmployeeSync.ApiV2Stream.Data;
 
 namespace Compliance360.EmployeeSync.ApiV2Stream
 {
@@ -23,16 +24,18 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
     public class ApiService : IApiService
     {
         private ILogger Logger { get; }
-        private HttpClient Http { get; set; }
-        private string _GroupsFolderId = null;
+        private IHttpDataService Http { get; }
+        private string _groupsFolderId = null;
 
         /// <summary>
         /// Initializes a new instance of the APIv2Service
         /// </summary>
         /// <param name="logger">Reference to a logger instance.</param>
-        public ApiService(ILogger logger)
+        /// <param name="http">Reference to the HttpClient instance.</param>
+        public ApiService(ILogger logger, IHttpDataService http)
         {
             Logger = logger;
+            Http = http;
         }
 
         /// <summary>
@@ -42,29 +45,22 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         /// <param name="division">The division where the department will be created</param>
         /// <param name="token">Current auth token</param>
         /// <returns>String id of the new department</returns>
-        public async Task<string> CreateDepartmentAsync(string departmentName, EntityId division, string token)
+        public async Task<string> CreateDepartmentAsync(string departmentName, Entity division, string token)
         {
             Logger.Debug("Creating department [{0}]", departmentName);
 
             var createDepartmentUri = $"/API/2.0/Data/EmployeeManagement/EmployeeDepartment/Default?token={token}";
 
-            var department = new Dictionary<string, object>();
-            department["DeptNum"] = departmentName;
-            department["DeptName"] = departmentName;
-            department["Division"] = division;
-
-            var departmentData = JsonConvert.SerializeObject(department);
-            var content = new StringContent(departmentData, Encoding.UTF8, "application/json");
-
-            var resp = await Http.PostAsync(createDepartmentUri, content);
-            if (!resp.IsSuccessStatusCode)
+            var department = new Dictionary<string, object>
             {
-                throw new DataException($"Error creating department using API:  ({resp.StatusCode}): {resp.ReasonPhrase}\n{departmentData}");
-            }
+                { "DeptNum", departmentName },
+                { "DeptName", departmentName },
+                { "Division", division }
+            };
 
-            var respContent = await resp.Content.ReadAsStringAsync();
-            var createResult = JObject.Parse(respContent);
-            return createResult["id"].Value<string>();
+            var result = await Http.PostAsync<CreateResponse>(createDepartmentUri, department);
+
+            return result.Id;
         }
 
         /// <summary>
@@ -73,7 +69,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         /// <param name="employee">Objective describing the employee to create.</param>
         /// <param name="token">The active AuthToken.</param>
         /// <returns>String employee id</returns>
-        public async Task<string> CreateEmployeeAsync(MetaObject employee, string token)
+        public async Task<string> CreateEmployeeAsync(Employee employee, string token)
         {
             Logger.Debug("Creating employee");
 
@@ -94,17 +90,15 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
                 throw new DataException($"EmployeeNum is missing and is required:\n{empData}");
             }
 
-            var employeeData = JsonConvert.SerializeObject(employee);
-            var createEmployeeContent = new StringContent(employeeData, Encoding.UTF8, "application/json");
-            var resp = await Http.PostAsync(createEmployeeUri, createEmployeeContent);
-            if (!resp.IsSuccessStatusCode)
+            var createEmployeeRequest = new Dictionary<string, object>();
+            foreach (var key in employee.Keys.Where(k => k != "id"))
             {
-                throw new DataException($"Error creating employee using API:  ({resp.StatusCode}): {resp.ReasonPhrase}\n{employeeData}");
+                createEmployeeRequest[key] = employee[key];
             }
 
-            var content = await resp.Content.ReadAsStringAsync();
-            var createEmployeeResult = JObject.Parse(content);
-            return createEmployeeResult["id"].Value<string>();
+            var result = await Http.PostAsync<CreateResponse>(createEmployeeUri, createEmployeeRequest);
+
+            return result.Id;
         }
 
         /// <summary>
@@ -117,14 +111,14 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         {
             Logger.Debug("Creating group [{0}]", groupName);
 
-            if (_GroupsFolderId == null)
+            if (_groupsFolderId == null)
             {
-                _GroupsFolderId = await this.GetGroupsFolderAsync(token);
+                _groupsFolderId = await this.GetGroupsFolderAsync(token);
             }
 
             var folder = new Dictionary<string, string>
             {
-                { "id", _GroupsFolderId }
+                { "id", _groupsFolderId }
             };
 
             var createGroupUri = $"/API/2.0/Data/EmployeeManagement/EmployeeGroup/Default?token={token}";
@@ -137,18 +131,9 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
                 {"Folder", folder }
             };
 
-            var groupData = JsonConvert.SerializeObject(group);
-            var content = new StringContent(groupData, Encoding.UTF8, "application/json");
+            var result = await Http.PostAsync<CreateResponse>(createGroupUri, group);
 
-            var resp = await Http.PostAsync(createGroupUri, content);
-            if (!resp.IsSuccessStatusCode)
-            {
-                throw new DataException($"Error creating Group API:  ({resp.StatusCode}): {resp.ReasonPhrase}\n{groupData}");
-            }
-
-            var respContent = await resp.Content.ReadAsStringAsync();
-            var createResult = JObject.Parse(respContent);
-            return createResult["id"].Value<string>();
+            return result.Id;
         }
 
         /// <summary>
@@ -158,27 +143,20 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         /// <param name="division">The id of the division.</param>
         /// <param name="token">The current auth token.</param>
         /// <returns></returns>
-        public async Task<string> CreateJobTitleAsync(string jobTitleName, EntityId division, string token)
+        public async Task<string> CreateJobTitleAsync(string jobTitleName, Entity division, string token)
         {
             Logger.Debug("Creating Job Title [{0}]", jobTitleName);
 
             var createJobTitletUri = $"/API/2.0/Data/Lookup/Employee/JobTitleId?token={token}";
 
-            var jobTitle = new Dictionary<string, object>();
-            jobTitle["Text"] = jobTitleName;
-
-            var jobTitleData = JsonConvert.SerializeObject(jobTitle);
-            var content = new StringContent(jobTitleData, Encoding.UTF8, "application/json");
-
-            var resp = await Http.PostAsync(createJobTitletUri, content);
-            if (!resp.IsSuccessStatusCode)
+            var jobTitle = new Dictionary<string, object>
             {
-                throw new DataException($"Error creating Job Title using API:  ({resp.StatusCode}): {resp.ReasonPhrase}\n{jobTitleData}");
-            }
+                {"Text", jobTitleName}
+            };
 
-            var respContent = await resp.Content.ReadAsStringAsync();
-            var createResult = JObject.Parse(respContent);
-            return createResult["id"].Value<string>();
+            var result = await Http.PostAsync<CreateResponse>(createJobTitletUri, jobTitle);
+
+            return result.Id;
         }
         
         /// <summary>
@@ -192,21 +170,10 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
 
             var getWorkflowTemplateUri =
                 $"/API/2.0/Data/Global/WorkflowTemplates/Employee?take=1&where=IsDefault='True'&token={token}";
-            var resp = await Http.GetAsync(getWorkflowTemplateUri);
-            if (!resp.IsSuccessStatusCode)
-            {
-                throw new DataException($"Error getting employee workflow template using API: ({resp.StatusCode}): {resp.ReasonPhrase}");
-            }
 
-            var content = await resp.Content.ReadAsStringAsync();
-            var workflowTemplateResult = JObject.Parse(content);
+            var resp = await Http.GetAsync<GetResponse<Entity>>(getWorkflowTemplateUri);
 
-            if (workflowTemplateResult["data"].HasValues)
-            {
-                return workflowTemplateResult["data"][0]["id"].Value<string>();
-            }
-
-            return null;
+            return resp.Data?.FirstOrDefault()?.Id;
         }
 
         /// <summary>
@@ -216,32 +183,22 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         /// <param name="division">The id of the division which should contain the department.</param>
         /// <param name="token">The current active auth token.</param>
         /// <returns>String Id of the department.</returns>
-        public async Task<string> GetDepartmentAsync(string departmentName, 
-            EntityId division, 
+        public async Task<string> GetDepartmentAsync(
+            string departmentName, 
+            Entity division, 
             string token)
         {
             Logger.Debug("Getting department [{0}]", departmentName);
 
             var where =
                 $"((DeptNum='{Uri.EscapeDataString(departmentName)}')|(DeptName='{Uri.EscapeDataString(departmentName)}'))";
-            //$"((Division='{division.Token}')%26((DeptNum='{Uri.EscapeDataString(departmentName)}')|(DeptName='{Uri.EscapeDataString(departmentName)}')))";
+            
             var findDepartmentUri =
                 $"/API/2.0/Data/EmployeeManagement/EmployeeDepartment/Default?take=1&where={where}&token={token}";
-            var resp = await Http.GetAsync(findDepartmentUri);
-            if (!resp.IsSuccessStatusCode)
-            {
-                throw new DataException($"Error finding department [{departmentName}] using API:  ({resp.StatusCode}): {resp.ReasonPhrase}");
-            }
 
-            var content = await resp.Content.ReadAsStringAsync();
-            var getDepartmentResult = JObject.Parse(content);
-
-            if (getDepartmentResult["data"].HasValues)
-            {
-                return getDepartmentResult["data"][0]["id"].Value<string>();
-            }
-
-            return null;
+            var resp = await Http.GetAsync<GetResponse<Entity>>(findDepartmentUri);
+            
+            return resp.Data?.FirstOrDefault()?.Id;
         }
 
         /// <summary>
@@ -256,21 +213,10 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
 
             var findDivisionUri =
                 $"/API/2.0/Data/EmployeeManagement/EmployeeDivision/Default?take=1&where=Path='{Uri.EscapeDataString(divisionPath)}'&token={token}";
-            var resp = await Http.GetAsync(findDivisionUri);
-            if (!resp.IsSuccessStatusCode)
-            {
-                throw new DataException($"Error finding division [{divisionPath}] using API:  ({resp.StatusCode}): {resp.ReasonPhrase}");
-            }
 
-            var content = await resp.Content.ReadAsStringAsync();
-            var fndDivisionResult = JObject.Parse(content);
+            var resp = await Http.GetAsync<GetResponse<Entity>>(findDivisionUri);
 
-            if (fndDivisionResult["data"].HasValues)
-            {
-                return fndDivisionResult["data"][0]["id"].Value<string>();
-            }
-
-            return null;
+            return resp.Data?.FirstOrDefault()?.Id;
         }
 
         /// <summary>
@@ -285,21 +231,9 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
 
             var findEmployeeUri = $"/API/2.0/Data/EmployeeManagement/Employee/Default?take=1&where=EmployeeNum='{Uri.EscapeDataString(employeeNum)}'&token={token}";
 
-            var resp = await Http.GetAsync(findEmployeeUri);
-            if (!resp.IsSuccessStatusCode)
-            {
-                throw new DataException($"Error finding employee [{employeeNum}] using API:  ({resp.StatusCode}): {resp.ReasonPhrase}");
-            }
+            var resp = await Http.GetAsync<GetResponse<Entity>>(findEmployeeUri);
 
-            var content = await resp.Content.ReadAsStringAsync();
-            var findEmployeeResult = JObject.Parse(content);
-
-            if (findEmployeeResult["data"].HasValues)
-            {
-                return findEmployeeResult["data"][0]["id"].Value<string>();
-            }
-
-            return null;
+            return resp.Data?.FirstOrDefault()?.Id;
         }
 
         /// <summary>
@@ -308,27 +242,15 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         /// <param name="employeeId">Id of the current employee</param>
         /// <param name="token">Auth token</param>
         /// <returns>String identifier of the employee's local profile</returns>
-        public async Task<string> GetEmployeeProfileIdAsync(EntityId employeeId, string token)
+        public async Task<string> GetEmployeeProfileIdAsync(Entity employeeId, string token)
         {
             Logger.Debug("Getting Profile for Employee [{0}]", employeeId);
 
-            var getEmployeeProfileUri = $"/API/2.0/Data/EmployeeManagement/Employee/Default?select=Profile&where=InstanceId='{employeeId.Token}'&token={token}";
+            var getEmployeeProfileUri = $"/API/2.0/Data/EmployeeManagement/Employee/Default?select=Profile&where=InstanceId='{employeeId.Id}'&token={token}";
 
-            var resp = await Http.GetAsync(getEmployeeProfileUri);
-            if (!resp.IsSuccessStatusCode)
-            {
-                throw new DataException($"Error finding Employee Profile for [{employeeId.Token}] from API:  ({resp.StatusCode}): {resp.ReasonPhrase}");
-            }
+            var resp = await Http.GetAsync<GetResponse<GetEmployeeProfileIdResponse>>(getEmployeeProfileUri);
 
-            var content = await resp.Content.ReadAsStringAsync();
-            var jobTitleResult = JObject.Parse(content);
-
-            if (jobTitleResult["data"].HasValues)
-            {
-                return jobTitleResult["data"][0]["Profile"]["id"].Value<string>();
-            }
-
-            return null;
+            return resp.Data?.FirstOrDefault()?.Profile.Id;
         }
 
         /// <summary>
@@ -344,21 +266,9 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             var getGroupUri =
                 $"/API/2.0/Data/EmployeeManagement/EmployeeGroup/Default?where=GroupName='{Uri.EscapeDataString(groupName)}'&take=1&token={token}";
 
-            var resp = await Http.GetAsync(getGroupUri);
-            if (!resp.IsSuccessStatusCode)
-            {
-                throw new DataException($"Error finding Group by name [{groupName}] from API: {getGroupUri} ({resp.StatusCode}): {resp.ReasonPhrase}");
-            }
+            var resp = await Http.GetAsync<GetResponse<Entity>>(getGroupUri);
 
-            var content = await resp.Content.ReadAsStringAsync();
-            var groupResult = JObject.Parse(content);
-
-            if (groupResult["data"].HasValues)
-            {
-                return groupResult["data"][0]["id"].Value<string>();
-            }
-
-            return null;
+            return resp.Data?.FirstOrDefault()?.Id;
         }
 
         /// <summary>
@@ -374,24 +284,10 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             var getGroupsFolderUri =
                 $"/API/2.0/Data/Global/Folders/Default?select=Name,Parent,Division&where=Name='Groups'&token={token}";
 
-            var resp = await Http.GetAsync(getGroupsFolderUri);
-            if (!resp.IsSuccessStatusCode)
-            {
-                throw new DataException($"Error finding Group Folder from API:  ({resp.StatusCode}): {resp.ReasonPhrase}");
-            }
-
-            var content = await resp.Content.ReadAsStringAsync();
-            var folderResult = JObject.Parse(content);
-            if (folderResult["data"].HasValues)
-            {
-                // loop through the folders and return the first
-                // folder that has a null Parent and Division
-                var folder = folderResult["data"].Children().FirstOrDefault(res =>
-                    res["Parent"]["id"].Value<string>() == "NULL" && res["Division"]["id"].Value<string>() == "NULL");
-                return folder?["id"].Value<string>();
-            }
-
-            return null;
+            var resp = await Http.GetAsync<GetResponse<Folder>>(getGroupsFolderUri);
+            
+            var folder = resp.Data?.FirstOrDefault(f => f.Parent.Id == "NULL" && f.Division.Id == "NULL");
+            return folder?.Id;
         }
 
         /// <summary>
@@ -400,28 +296,21 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         /// <param name="profileId">The local profile id.</param>
         /// <param name="token">The auth token.</param>
         /// <returns></returns>
-        public async Task<List<string>> GetGroupMembershipAsync(EntityId profileId, string token)
+        public async Task<List<string>> GetGroupMembershipAsync(Entity profile, string token)
         {
-            Logger.Debug("Getting Group Membership for [{0}]", profileId.Token);
+            Logger.Debug("Getting Group Membership for [{0}]", profile.Id);
 
             var getGroupsUri =
-                $"/API/2.0/Data/EmployeeManagement/EmployeeProfile/Default?select=Groups&where=InstanceId='{profileId.Token}'&token={token}";
+                $"/API/2.0/Data/EmployeeManagement/EmployeeProfile/Default?select=Groups&where=InstanceId='{profile.Id}'&token={token}";
 
-            var resp = await Http.GetAsync(getGroupsUri);
-            if (!resp.IsSuccessStatusCode)
-            {
-                throw new DataException($"Error finding groups for Profile [{profileId.Token}] from API:  ({resp.StatusCode}): {resp.ReasonPhrase}");
-            }
+            var resp = await Http.GetAsync<GetResponse<Profile>>(getGroupsUri);
 
-            var content = await resp.Content.ReadAsStringAsync();
-            var groupResult = JObject.Parse(content);
-
-            if (groupResult["data"].HasValues)
+            if (resp.Data?.Count > 0)
             {
                 var groups = new List<string>();
-                foreach (var group in groupResult["data"][0]["Groups"].Children())
+                foreach (var group in resp.Data[0].Groups)
                 {
-                    groups.Add(group["id"].Value<string>());
+                    groups.Add(group.Id);
                 }
 
                 return groups;
@@ -443,21 +332,9 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             var getGroupUri =
                 $"/API/2.0/Data/EmployeeManagement/EmployeeGroup/Default?select=GroupName&where=InstanceId='{groupId}'&take=1&token={token}";
 
-            var resp = await Http.GetAsync(getGroupUri);
-            if (!resp.IsSuccessStatusCode)
-            {
-                throw new DataException($"Error finding Group [{groupId}] from API:  ({resp.StatusCode}): {resp.ReasonPhrase}");
-            }
+            var resp = await Http.GetAsync<GetResponse<EmployeeGroup>>(getGroupUri);
 
-            var content = await resp.Content.ReadAsStringAsync();
-            var groupResult = JObject.Parse(content);
-
-            if (groupResult["data"].HasValues)
-            {
-                return groupResult["data"][0]["GroupName"].Value<string>();
-            }
-
-            return null;
+            return resp.Data?.FirstOrDefault()?.GroupName;
         }
 
         /// <summary>
@@ -467,26 +344,14 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         /// <param name="division">The entity id of the division that contains the job title.</param>
         /// <param name="token">The auth token.</param>
         /// <returns>Job title id</returns>
-        public async Task<string> GetJobTitleAsync(string name, EntityId division, string token)
+        public async Task<string> GetJobTitleAsync(string name, Entity division, string token)
         {
             Logger.Debug("Getting Job Title [{0}]", name);
 
             var jobTitlesUri = $"/API/2.0/Data/Lookup/Employee/JobTitleId?select=Text&take=1&where=Text='{Uri.EscapeDataString(name)}'&token={token}";
-            var resp = await Http.GetAsync(jobTitlesUri);
-            if (!resp.IsSuccessStatusCode)
-            {
-                throw new DataException($"Error finding job title [{name}] from API:  ({resp.StatusCode}): {resp.ReasonPhrase}");
-            }
-
-            var content = await resp.Content.ReadAsStringAsync();
-            var jobTitleResult = JObject.Parse(content);
-
-            if (jobTitleResult["data"].HasValues)
-            {
-                return jobTitleResult["data"][0]["id"].Value<string>();
-            }
-
-            return null;
+            var resp = await Http.GetAsync<GetResponse<Entity>>(jobTitlesUri);
+            
+            return resp.Data?.FirstOrDefault()?.Id;
         }
 
         /// <summary>
@@ -501,20 +366,14 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             // the compliance 360 api endpoint can change. make the call
             // to get the correct base address
             var orgHostUri = $"/API/2.0/Security/OrganizationHost?organization={Uri.EscapeDataString(organization)}";
-            var resp = await Http.GetAsync(orgHostUri);
-            if (resp.IsSuccessStatusCode)
+            var resp = await Http.GetAsync<HostResponse>(orgHostUri);
+
+            if (resp.Host == null)
             {
-                var hostAddressResp = new
-                {
-                    host = ""
-                };
-
-                var hostAddress = await GetResponseJson(resp, hostAddressResp);
-
-                return hostAddress.host;
+                throw new DataException($"Cannot get organization host address at: {orgHostUri}");
             }
-            
-            throw new DataException($"Cannot get organization host address at: {orgHostUri}");
+
+            return resp.Host;
         }
 
         /// <summary>
@@ -530,16 +389,13 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             Logger.Debug("Logging in to API Organization:{0} Username:{1}", organization, username);
 
             // init the http client
-            Http = new HttpClient();
-            Http.BaseAddress = new Uri(baseAddress);
-            Http.DefaultRequestHeaders.Accept.Clear();
-            Http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
+            Http.Initialize(baseAddress);
+            
             // get the api host address based on the organization
             var hostAddress = await GetHostAddressAsync(organization);
             if (hostAddress != baseAddress)
             {
-                Http.BaseAddress = new Uri(hostAddress);
+                Http.Initialize(hostAddress);
             }
 
             // make the request to authenticate with the api
@@ -551,28 +407,11 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
                 culture = "en-US"
             };
 
-            var loginPayload = JsonConvert.SerializeObject(loginData);
-            var loginContent = new StringContent(loginPayload, Encoding.UTF8, "application/json");
             const string loginUri = "/API/2.0/Security/Login";
 
-            string token = null;
-            var resp = await Http.PostAsync(loginUri, loginContent);
-            if (resp.IsSuccessStatusCode)
-            {
-                var loginResponse = new
-                {
-                    token = ""
-                };
-
-                var loginToken = await GetResponseJson(resp, loginResponse);
-                token = loginToken.token;
-            }
-            else
-            {
-                throw new DataException($"Error logging in to organization. ({resp.StatusCode}): {resp.ReasonPhrase}");
-            }
-
-            return token;
+            var resp = await Http.PostAsync<LoginResponse>(loginUri, loginData);
+            
+            return resp.Token;
         }
 
         /// <summary>
@@ -585,11 +424,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             Logger.Debug("Logging out of API");
 
             var logoutUri = $"/API/2.0/Security/Logout?token={Uri.EscapeUriString(token)}";
-            var resp = await Http.GetAsync(logoutUri);
-            if (!resp.IsSuccessStatusCode)
-            {
-                throw new DataException($"Unable to logout user with token: [{token}].");
-            }
+            await Http.GetAsync(logoutUri);
 
             return true;
         }
@@ -601,11 +436,11 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         /// <param name="employee">The employee metadata object</param>
         /// <param name="token">The current active auth token</param>
         /// <returns>Void</returns>
-        public async Task<bool> UpdateEmployeeAsync(EntityId employeeId, MetaObject employee, string token)
+        public async Task<bool> UpdateEmployeeAsync(Employee employee, string token)
         {
-            Logger.Debug("Updating Employee [{0}]", employeeId);
+            Logger.Debug("Updating Employee [{0}]", employee.Id);
 
-            var createEmployeeUri = $"/API/2.0/Data/EmployeeManagement/Employee/Default/{employeeId.Id}?token={token}";
+            var createEmployeeUri = $"/API/2.0/Data/EmployeeManagement/Employee/Default/{employee.InstanceId}?token={token}";
             
             // ensure required fields are present
             if (employee.ContainsKey("FirstName") && string.IsNullOrEmpty(employee["FirstName"] as string))
@@ -622,89 +457,52 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
                 throw new DataException($"EmployeeNum is missing and is required:\n{empData}");
             }
 
-            var employeeData = JsonConvert.SerializeObject(employee);
-            var createEmployeeContent = new StringContent(employeeData, Encoding.UTF8, "application/json");
-
-            var resp = await Http.PostAsync(createEmployeeUri, createEmployeeContent);
-            if (!resp.IsSuccessStatusCode)
+            var employeeUpdateRequest = new Dictionary<string, object>();
+            foreach (var key in employee.Keys.Where(k => k != "id"))
             {
-                throw new DataException($"Error updating employee using API:  ({resp.StatusCode}): {resp.ReasonPhrase}\n{createEmployeeUri}\n{employeeData}");
+                employeeUpdateRequest[key] = employee[key];
             }
-
-            var content = await resp.Content.ReadAsStringAsync();
-
+            
+            var resp = await Http.PostAsync<CreateResponse>(createEmployeeUri, employeeUpdateRequest);
+            
             return true;
         }
 
         /// <summary>
         /// Updates an employee profile to add/remove group membership
         /// </summary>
-        /// <param name="profileId">Id of the profile to update.</param>
+        /// <param name="profile">The profile to update.</param>
         /// <param name="groupsToAdd">List of groups to add to the user.</param>
         /// <param name="groupsToRemove">List of groups that should be removed from the user.</param>
         /// <param name="token">Current auth token.</param>
         /// <returns></returns>
-        public async Task<bool> UpdateEmployeeProfileAsync(EntityId profileId, List<EntityId> groupsToAdd, List<EntityId> groupsToRemove, string token)
+        public async Task<bool> UpdateEmployeeProfileAsync(Profile profile, List<Entity> groupsToAdd, List<Entity> groupsToRemove, string token)
         {
-            Logger.Debug("Updating Employee Profile [{0}]", profileId.Token);
+            Logger.Debug("Updating Employee Profile [{0}]", profile.Id);
 
             if (groupsToAdd == null || groupsToAdd.Count == 0)
                 return true;
 
-            var updateProfileUri = $"/API/2.0/Data/EmployeeManagement/EmployeeProfile/Default/{profileId.Id}?token={token}";
+            var updateProfileUri = $"/API/2.0/Data/EmployeeManagement/EmployeeProfile/Default/{profile.InstanceId}?token={token}";
 
-            var groups = new List<Dictionary<string, string>>();
-
+            profile.Groups = new List<EntityReference>();
+            
             groupsToAdd.ForEach(g =>
             {
-                var grp = new Dictionary<string, string>
-                {
-                    {"id", g.Token},
-                    {"action", "Add"}
-                };
-                groups.Add(grp);    
+                profile.Groups.Add(new EntityReference { Action = "Add", Id=g.Id});
             });
 
             groupsToRemove.ForEach(g =>
             {
-                var grp = new Dictionary<string, string>
-                {
-                    {"id", g.Token},
-                    {"action", "Remove"}
-                };
-                groups.Add(grp);
+                profile.Groups.Add(new EntityReference { Action = "Remove", Id = g.Id });
             });
-
-            var profile = new Dictionary<string, object>
-            {
-                {"Groups", groups}
-            };
-
+            
             var groupData = JsonConvert.SerializeObject(profile);
             var content = new StringContent(groupData, Encoding.UTF8, "application/json");
 
-            var resp = await Http.PostAsync(updateProfileUri, content);
-            if (!resp.IsSuccessStatusCode)
-            {
-                throw new DataException($"Error updating EmployeeProfile using API:  ({resp.StatusCode}): {resp.ReasonPhrase}\n{updateProfileUri}\n{groupData}");
-            }
-
-            var respContent = await resp.Content.ReadAsStringAsync();
+            await Http.PostAsync<CreateResponse>(updateProfileUri, profile);
             
             return true;
-        }
-
-        /// <summary>
-        /// Reads the content from an http request and returns the json object
-        /// </summary>
-        /// <param name="response">The HTTP Response</param>
-        /// <param name="anonymousType">The type of object to return</param>
-        /// <returns>Deserialized response.</returns>
-        private async Task<T> GetResponseJson<T>(HttpResponseMessage response, T anonymousType)
-        {
-            var content = await response.Content.ReadAsStringAsync();
-            var json = JsonConvert.DeserializeAnonymousType(content, anonymousType);
-            return json;
         }
     }
 }

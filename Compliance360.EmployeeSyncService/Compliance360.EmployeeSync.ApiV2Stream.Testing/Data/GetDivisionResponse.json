@@ -1,0 +1,11 @@
+﻿{
+  "status": {
+    "code": 200,
+    "message": "OK"
+  },
+  "data": [
+    {
+      "id": "EmployeeManagement/EmployeeDivision/Default:1"
+    }
+  ]
+}

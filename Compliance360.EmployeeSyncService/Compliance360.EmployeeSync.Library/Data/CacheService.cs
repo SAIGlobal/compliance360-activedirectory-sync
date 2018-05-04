@@ -173,7 +173,10 @@ namespace Compliance360.EmployeeSync.Library.Data
                             continue;
 
                         var values = cacheRow.Split("||".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        _cache[values[0]] = values[1];
+                        if (values != null && values.Length == 2)
+                        {
+                            _cache[values[0]] = values[1];
+                        }
                     }
 
                     cacheFile.Close();

@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Compliance360.EmployeeSync.ApiV2Stream.Data;
 using Compliance360.EmployeeSync.Library.Configuration;
 using Compliance360.EmployeeSync.Library.Data;
 using Compliance360.EmployeeSync.Library.OutputStreams;
@@ -55,6 +56,8 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         private ICacheService WorkflowCache { get; set; }
         private ICacheService EmployeeGroupCache { get; set; }
         private ICacheService EmployeeProfileCache { get; set; }
+        private ICacheService GroupMembershipCache { get; set; }
+
         private System.Threading.Timer _timer;
 
         /// <summary>
@@ -88,6 +91,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             WorkflowCache?.WriteCacheEntries();
             EmployeeGroupCache?.WriteCacheEntries();
             EmployeeProfileCache?.WriteCacheEntries();
+            GroupMembershipCache?.WriteCacheEntries();
 
             Logger.Debug("Closed the Api Stream");
         }
@@ -134,6 +138,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             EmployeeGroupCache = CacheServiceFactory.CreateCacheService(Logger, "EmployeeGroup", true);
             EmployeeProfileCache = CacheServiceFactory.CreateCacheService(Logger, "EmployeeProfile", false);
             DivisionCache = CacheServiceFactory.CreateCacheService(Logger, "Division", false);
+            GroupMembershipCache = CacheServiceFactory.CreateCacheService(Logger, "GroupMembership", false);
         }
 
         /// <summary>
@@ -173,12 +178,12 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         /// <param name="user">Reference to the user to write to the stream.</param>
         public void Write(ActiveDirectoryUser user)
         {
-            var employee = new MetaObject();
+            var employee = new Employee();
             
             // process each of the field values in the map
             string employeeNum = null;
-            EntityId workflowTemplate = null;
-            EntityId division = null;
+            Entity workflowTemplate = null;
+            Entity division = null;
             SortedList<string, string> groups = null;
 
             foreach (MapElement map in StreamConfig.Mapping)
@@ -245,10 +250,9 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             
             // get the id of the employee from the cache...if found this is an update
             // otherwise we are creating a new employee.
-            EntityId employeeId = null;
             if (EmployeeCache.ContainsKey(employeeNum))
             {
-                employeeId = new EntityId(EmployeeCache.GetValue(employeeNum));
+                employee.Id = EmployeeCache.GetValue(employeeNum);
             }
             else
             {
@@ -256,29 +260,30 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
                 var empId = ApiService.GetEmployeeIdAsync(employeeNum, AuthToken).GetAwaiter().GetResult();
                 if (empId != null)
                 {
-                    employeeId = new EntityId(empId);
-                    EmployeeCache.Add(employeeNum, employeeId.Token);
+                    employee.Id = empId;
+                    EmployeeCache.Add(employeeNum, employee.Id);
                 }
             }
 
-            if (employeeId == null)
+            if (employee.Id == null)
             {
                 // create the new employee record
                 employee[SystemFields.CanLogin] = true;
                 employee[SystemFields.Password] = Guid.NewGuid().ToString();
                 
-                employeeId = new EntityId(ApiService.CreateEmployeeAsync(employee, AuthToken).GetAwaiter().GetResult());
-                EmployeeCache.Add(employeeNum, employeeId.Token);
+                var newEmployeeId = ApiService.CreateEmployeeAsync(employee, AuthToken).GetAwaiter().GetResult();
+                employee.Id = newEmployeeId;
+                EmployeeCache.Add(employeeNum, newEmployeeId);
             }
             else
             {
                 // update an existing employee record
-                ApiService.UpdateEmployeeAsync(employeeId, employee, AuthToken).GetAwaiter().GetResult();
+                ApiService.UpdateEmployeeAsync(employee, AuthToken).GetAwaiter().GetResult();
             }
 
             if (groups != null)
             {
-                ProcessGroupChanges(employeeId, groups.Values.ToList());
+                ProcessGroupChanges(employee, groups.Values.ToList());
             }
         }
         
@@ -286,14 +291,14 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         /// Returns the default workflow template
         /// </summary>
         /// <returns></returns>
-        public EntityId GetDefaultWorkflowTemplate()
+        public Entity GetDefaultWorkflowTemplate()
         {
             const string DefaultTemplateName = "SystemDefault";
 
             // check the cache
             if (WorkflowCache.ContainsKey(DefaultTemplateName))
             {
-                return new EntityId(WorkflowCache.GetValue(DefaultTemplateName));
+                return new Entity { Id = WorkflowCache.GetValue(DefaultTemplateName) };
             }
 
             // workflow does not exist in the cache. Get it from the service
@@ -301,7 +306,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             if (workflowTemplateId != null)
             {
                 WorkflowCache.Add(DefaultTemplateName, workflowTemplateId);
-                return new EntityId(workflowTemplateId);
+                return new Entity { Id = workflowTemplateId };
             }
 
             return null;
@@ -314,9 +319,9 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         /// <param name="user">The user object that contains the data.</param>
         /// <param name="division"></param>
         /// <returns></returns>
-        public EntityId GetDepartment(string from, 
+        public Entity GetDepartment(string from, 
             ActiveDirectoryUser user, 
-            EntityId division)
+            Entity division)
         {
             // get the department name
             var departmentName = GetFieldValue(from, user);
@@ -328,7 +333,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             // check the cache
             if (DepartmentCache.ContainsKey(departmentName))
             {
-                return new EntityId(DepartmentCache.GetValue(departmentName));
+                return new Entity { Id = DepartmentCache.GetValue(departmentName) };
             }
 
             // did not find the department in the cache
@@ -337,7 +342,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             if (departmentId != null)
             {
                 DepartmentCache.Add(departmentName, departmentId);
-                return new EntityId(departmentId);
+                return new Entity { Id = departmentId };
             }
 
             // we did not find the department in the service...create it
@@ -345,7 +350,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             if (departmentId != null)
             {
                 DepartmentCache.Add(departmentName, departmentId);
-                return new EntityId(departmentId);
+                return new Entity { Id = departmentId };
             }
 
             return null;
@@ -357,7 +362,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         /// <param name="from">The from value to parse</param>
         /// <param name="user">The user object that contains the data.</param>
         /// <returns></returns>
-        public EntityId GetDivisionFieldValue(string from, ActiveDirectoryUser user)
+        public Entity GetDivisionFieldValue(string from, ActiveDirectoryUser user)
         {
             // get the division name value
             var divisionName = GetFieldValue(from, user);
@@ -365,7 +370,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             // check the cache
             if (DivisionCache.ContainsKey(divisionName))
             {
-                return new EntityId(DivisionCache.GetValue(divisionName));
+                return new Entity { Id = DivisionCache.GetValue(divisionName) };
             }
 
             // division does not exist in the cache...get it from the service
@@ -373,7 +378,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             if (divisionId != null)
             {
                 DivisionCache.Add(divisionName, divisionId);
-                return new EntityId(divisionId);
+                return new Entity { Id = divisionId };
             }
 
             return null;
@@ -441,7 +446,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         /// <param name="division">The id of the division.</param>
         /// <param name="user">The user object that contains the data.</param>
         /// <returns></returns>
-        public EntityId GetJobTitleValue(string from, EntityId division, ActiveDirectoryUser user)
+        public Entity GetJobTitleValue(string from, Entity division, ActiveDirectoryUser user)
         {
             // get the field value for the job title name
             var jobTitleValue = GetFieldValue(from, user);
@@ -452,14 +457,14 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
 
             // check the cache 
             if (JobTitleCache.ContainsKey(jobTitleValue))
-                return new EntityId(JobTitleCache.GetValue(jobTitleValue));
+                return new Entity { Id = JobTitleCache.GetValue(jobTitleValue) };
 
             // job title does not exist in the cache...get it from the service
             var jobTitleId = ApiService.GetJobTitleAsync(jobTitleValue, division, AuthToken).GetAwaiter().GetResult();
             if (jobTitleId != null)
             {
                 JobTitleCache.Add(jobTitleValue, jobTitleId);
-                return new EntityId(jobTitleId);
+                return new Entity { Id = jobTitleId };
             }
 
             // did not find the job title in the system so add it.
@@ -467,7 +472,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             if (jobTitleId != null)
             {
                 JobTitleCache.Add(jobTitleValue, jobTitleId);
-                return new EntityId(jobTitleId);
+                return new Entity { Id = jobTitleId };
             }
 
             return null;
@@ -476,33 +481,46 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         /// <summary>
         /// Processes the groups from AD and updates the users as needed.
         /// </summary>
-        /// <param name="employeeId">The id of the employee</param>
+        /// <param name="employee">The id of the employee</param>
         /// <param name="groupNames">The names of the groups the user is a member of</param>
-        public void ProcessGroupChanges(EntityId employeeId, List<string> groupNames)
+        public void ProcessGroupChanges(Employee employee, List<string> groupNames)
         {
             // get the id of the user's profile
-            EntityId profileId = null;
-            if (EmployeeProfileCache.ContainsKey(employeeId.Token))
+            Profile profile = null;
+            if (EmployeeProfileCache.ContainsKey(employee.Id))
             {
-                profileId = new EntityId(EmployeeProfileCache.GetValue(employeeId.Token));
+                profile = new Profile { Id = EmployeeProfileCache.GetValue(employee.Id) };
             }
 
-            if (profileId == null)
+            if (profile == null)
             {
                 // did not find it in the cache...get the id from the api
-                var employeeProfileId = ApiService.GetEmployeeProfileIdAsync(employeeId, AuthToken).GetAwaiter().GetResult();
-                profileId = new EntityId(employeeProfileId);
+                var employeeProfileId = ApiService.GetEmployeeProfileIdAsync(new Entity{ Id = employee.Id }, AuthToken).GetAwaiter().GetResult();
+                profile = new Profile { Id = employeeProfileId };
             }
 
-            // get the existing group membership
-            var onlineGroupsIds = ApiService.GetGroupMembershipAsync(profileId, AuthToken).GetAwaiter().GetResult();
+            // get the existing cached group membership
+            var cachedGroupsIds = new HashSet<string>();
+            if (GroupMembershipCache.ContainsKey(employee.Id))
+            {
+                var ids = GroupMembershipCache.GetValue(employee.Id).Split(',');
+                ids.ToList().ForEach(id =>
+                {
+                    if (!cachedGroupsIds.Contains(id))
+                    {
+                        cachedGroupsIds.Add(id);
+                    }
+                });
+            }
+           
+            var onlineGroupsIds = ApiService.GetGroupMembershipAsync(profile, AuthToken).GetAwaiter().GetResult();
 
             // we only get Ids back from the API so we need to further process them
             // so that we xref the Ids to the group names returned by AD
             var onlineGroups = ProcessOnlineGroups(onlineGroupsIds);
 
             // if not then add them to the user
-            var groupsToAdd = new List<EntityId>();
+            var groupsToAdd = new List<Entity>();
             var adGroupIds = new List<string>();
             groupNames.ForEach(grpName =>
             {
@@ -523,32 +541,37 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
                 // add the group to the list of AD groups...we will use this list to
                 // figure out which groups need to be removed from Compliance 360
                 adGroupIds.Add(groupId);
-
+                
                 // if the user is not a current member of the group then
                 // put it in the list to add to the profile
                 if (!onlineGroups.ContainsKey(groupId))
                 {
-                    groupsToAdd.Add(new EntityId(groupId));
+                    groupsToAdd.Add(new Entity { Id = groupId } );
+
+                    cachedGroupsIds.Add(groupId);
                 }
             });
 
             // check the list of online group Ids. If they are not in the list
-            // of local AD groups them remove it
-            var groupsToRemove = new List<EntityId>();
-            foreach (var onlineGroup in onlineGroupsIds)
+            // of local AD groups and we have record that we added the user to the group them remove it
+            var groupsToRemove = new List<Entity>();
+            foreach (var onlineGroupId in onlineGroupsIds)
             {
                 // bit of a hack but we do not want to remove the user from the 
                 // division employees groups
-                if (onlineGroups[onlineGroup].Contains("Employees"))
+                if (onlineGroups[onlineGroupId].Contains("Employees"))
                     continue;
 
-                if (!adGroupIds.Contains(onlineGroup))
+                if (!adGroupIds.Contains(onlineGroupId) && cachedGroupsIds.Contains(onlineGroupId))
                 {
-                    groupsToRemove.Add(new EntityId(onlineGroup));
+                    groupsToRemove.Add(new Entity { Id = onlineGroupId });
+                    cachedGroupsIds.Remove(onlineGroupId);
                 }
             }
 
-            ApiService.UpdateEmployeeProfileAsync(profileId, groupsToAdd, groupsToRemove, AuthToken);
+            ApiService.UpdateEmployeeProfileAsync(profile, groupsToAdd, groupsToRemove, AuthToken);
+
+            GroupMembershipCache.Add(employee.Id, String.Join(",", cachedGroupsIds));
         }
 
         /// <summary>

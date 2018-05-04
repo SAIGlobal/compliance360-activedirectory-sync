@@ -1,0 +1,12 @@
+﻿{
+  "status": {
+    "code": 200,
+    "message": "OK"
+  },
+  "data": [
+    {
+      "id": "EmployeeManagement/EmployeeGroup/Default:1",
+      "GroupName": "Everyone" 
+    }
+  ]
+}

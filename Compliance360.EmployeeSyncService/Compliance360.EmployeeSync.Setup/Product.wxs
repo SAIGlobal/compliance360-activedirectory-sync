@@ -107,22 +107,6 @@
       <Component Id="NLog.dll" Guid="c446029f-ea5f-4755-9533-764b54e6cd97">
         <File Id="NLog.dll" Name="NLog.dll" DiskId="1" Source="Files\NLog.dll" KeyPath="yes"></File>
       </Component>
-      <Component Id="nunit.framework.dll" Guid="d979a76a-045b-4c40-abcb-1b604c1ab53b">
-        <File Id="nunit.framework.dll" Name="nunit.framework.dll" DiskId="1" Source="Files\nunit.framework.dll"
-              KeyPath="yes">
-        </File>
-      </Component>
-      <Component Id="Rebex.Common.dll" Guid="c2793695-0e6b-4bb1-a8e7-44093a62bc26">
-        <File Id="Rebex.Common.dll" Name="Rebex.Common.dll" DiskId="1" Source="Files\Rebex.Common.dll" KeyPath="yes"></File>
-      </Component>
-      <Component Id="Rebex.Networking.dll" Guid="064999e2-8cd5-414c-94bc-0c9a694a8d1a">
-        <File Id="Rebex.Networking.dll" Name="Rebex.Networking.dll" DiskId="1" Source="Files\Rebex.Networking.dll"
-              KeyPath="yes">
-        </File>
-      </Component>
-      <Component Id="Rebex.Sftp.dll" Guid="c96267a8-6e3e-4bde-b018-9026b4a3afbf">
-        <File Id="Rebex.Sftp.dll" Name="Rebex.Sftp.dll" DiskId="1" Source="Files\Rebex.Sftp.dll" KeyPath="yes"></File>
-      </Component>
       <Component Id="StructureMap.dll" Guid="1f3e7726-f08a-4645-b634-e22fd74f3dfd">
         <File Id="StructureMap.dll" Name="StructureMap.dll" DiskId="1" Source="Files\StructureMap.dll" KeyPath="yes"></File>
       </Component>

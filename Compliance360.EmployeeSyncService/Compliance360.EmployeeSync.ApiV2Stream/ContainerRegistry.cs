@@ -17,6 +17,8 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         {
             For<IOutputStream>().Use<ApiStream>().Named(PluginNameC360ApiV2Stream).AlwaysUnique();
             For<IApiService>().Use<ApiService>().AlwaysUnique();
+            For<IHttpDataService>().Use<HttpDataService>().AlwaysUnique();
+            For<IHttpClientHandler>().Use<HttpClientHandler>().AlwaysUnique();
         }
     }
 }

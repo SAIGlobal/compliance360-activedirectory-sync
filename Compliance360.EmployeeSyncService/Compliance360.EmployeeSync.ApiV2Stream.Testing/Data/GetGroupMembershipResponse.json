@@ -1,0 +1,16 @@
+﻿{
+  "status": {
+    "code": 200,
+    "message": "OK"
+  },
+  "data": [
+    {
+      "id": "EmployeeManagement/EmployeeProfile/Default:1",
+      "Groups": [
+        {
+          "id":  "EmployeeManagement/EmployeeGroup/Default:1" 
+        }
+      ]
+    }
+  ]
+}

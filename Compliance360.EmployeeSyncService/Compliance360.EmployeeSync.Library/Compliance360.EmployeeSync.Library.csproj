@@ -30,33 +30,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.4.12\lib\net45\NLog.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\NLog.4.5.3\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="NLog.Targets.Syslog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=a15d6ba50060b73f, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.Targets.Syslog.4.0.1\lib\net45\NLog.Targets.Syslog.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Rebex.Common, Version=2.5.6461.0, Culture=neutral, PublicKeyToken=1c4638788972655d, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rebex.Common.2.5.6461\lib\net40\Rebex.Common.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Rebex.Networking, Version=3.5.6461.0, Culture=neutral, PublicKeyToken=1c4638788972655d, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rebex.Networking.3.5.6461\lib\net40\Rebex.Networking.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Rebex.Sftp, Version=3.0.6461.0, Culture=neutral, PublicKeyToken=1c4638788972655d, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rebex.Sftp.3.0.6461\lib\net40\Rebex.Sftp.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="StructureMap, Version=4.5.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\StructureMap.4.5.2\lib\net45\StructureMap.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="StructureMap, Version=4.6.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\StructureMap.4.6.1\lib\net45\StructureMap.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -64,6 +49,10 @@
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.DirectoryServices.Protocols" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -104,11 +93,9 @@
     <Compile Include="Filters\IAttributeFilterFactory.cs" />
     <Compile Include="Data\ICacheService.cs" />
     <Compile Include="Data\ICacheServiceFactory.cs" />
-    <Compile Include="Data\ISftpService.cs" />
     <Compile Include="Filters\IUserFilter.cs" />
     <Compile Include="Filters\IUserFilterFactory.cs" />
     <Compile Include="Filters\ReadLdapFilter.cs" />
-    <Compile Include="Data\SftpService.cs" />
     <Compile Include="Filters\UacAttributeFilter.cs" />
     <Compile Include="Filters\UserCacheFilter.cs" />
     <Compile Include="Data\UserFilterFactory.cs" />
@@ -120,7 +107,6 @@
     <Compile Include="OutputStreams\IOutputStreamFactory.cs" />
     <Compile Include="OutputStreams\LoggerStream.cs" />
     <Compile Include="OutputStreams\OutputStreamFactory.cs" />
-    <Compile Include="OutputStreams\SftpStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Jobs\SyncJob.cs" />
     <Compile Include="Resources\ResourceManager.cs" />

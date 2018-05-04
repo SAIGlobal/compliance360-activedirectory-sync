@@ -1,0 +1,18 @@
+﻿{
+  "status": {
+    "code": 200,
+    "message": "OK"
+  },
+  "data": [
+    {
+      "id": "Global/Folders/Default:1",
+      "Name": "Global",
+      "Parent": {
+        "id": "NULL"
+      },
+      "Division": {
+        "id": "NULL" 
+      } 
+    }
+  ]
+}
