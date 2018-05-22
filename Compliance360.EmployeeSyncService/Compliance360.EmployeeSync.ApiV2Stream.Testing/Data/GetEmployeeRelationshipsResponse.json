@@ -1,0 +1,16 @@
+﻿{
+  "status": {
+    "status": 200,
+    "message": "OK"
+  },
+  "data": [
+    {
+      "id": "EmployeeManagement/Employee/Default:1",
+      "RelatedEmployees": [
+        {
+          "id": "EmployeeManagement/EmployeeRelationship/Default:1"
+        }
+      ]
+    }
+  ]
+}

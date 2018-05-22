@@ -14,11 +14,16 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         Task<string> CreateEmployeeAsync(Employee employee, string token);
         Task<string> CreateGroupAsync(string groupName, string token);
         Task<string> CreateJobTitleAsync(string jobTitle, Entity division, string token);
+        Task<string> CreateRelationshipTypeAsync(string relationshipType, string token);
+        Task<string> CreateRelationshipAsync(Employee employee, string destEmployeeId, Entity relType, string token);
         Task<string> GetDefaultWorkflowTemplateAsync(string token);
         Task<string> GetDepartmentAsync(string departmentName, Entity division, string token);
         Task<string> GetDivisionAsync(string divisionName, string token);
         Task<string> GetEmployeeIdAsync(string userName, string token);
-        Task<string> GetEmployeeProfileIdAsync(Entity employeeId, string AuthToken);
+        Task<string> GetEmployeeProfileIdAsync(Entity employeeId, string token);
+        Task<string> GetRelationshipTypeByNameAsync(string name, string token);
+        Task<List<string>> GetEmployeeRelationships(Employee employee, string token);
+        Task<GetEmployeeRelationshipDetailsResponse> GetEmployeeRelationshipDetails(Entity relationship, string token);
         Task<string> GetGroupAsync(string groupName, string token);
         Task<string> GetGroupsFolderAsync(string token);
         Task<List<string>> GetGroupMembershipAsync(Entity profileId, string token);
@@ -29,5 +34,6 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         Task<bool> LogoutAsync(string token);
         Task<bool> UpdateEmployeeAsync(Employee employee, string token);
         Task<bool> UpdateEmployeeProfileAsync(Profile profileId, List<Entity> groupsToAdd, List<Entity> groupsToRemove, string token);
+        Task<bool> UpdateRelationshipAsync(GetEmployeeRelationshipDetailsResponse relationship, string destEmployeeId, string token);
     }
 }

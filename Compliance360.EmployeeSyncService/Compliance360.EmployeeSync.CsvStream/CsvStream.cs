@@ -43,6 +43,10 @@ namespace Compliance360.EmployeeSync.CsvStream
             
             Logger.Info("Closed the Csv Stream");
         }
+        public void StreamComplete()
+        {
+
+        }
 
         /// <summary>
         /// Opens the stream for writing.

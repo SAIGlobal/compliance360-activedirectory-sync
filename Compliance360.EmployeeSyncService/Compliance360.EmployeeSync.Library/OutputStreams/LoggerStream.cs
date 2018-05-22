@@ -35,6 +35,11 @@ namespace Compliance360.EmployeeSync.Library.OutputStreams
             Logger.Info("Closed the Logger Stream");
         }
 
+        public void StreamComplete()
+        {
+
+        }
+
         /// <summary>
         /// Opens the stream for writing.
         /// </summary>

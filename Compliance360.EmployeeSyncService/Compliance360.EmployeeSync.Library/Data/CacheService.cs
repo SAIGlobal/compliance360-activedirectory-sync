@@ -15,7 +15,7 @@ namespace Compliance360.EmployeeSync.Library.Data
         private readonly bool _isMap;
 
         /// <summary>
-        ///     Initializes a new instance of the CacheService
+        /// Initializes a new instance of the CacheService
         /// </summary>
         /// <param name="logger">The current logger instance</param>
         /// <param name="cacheName">The name of the cache</param>
@@ -96,6 +96,18 @@ namespace Compliance360.EmployeeSync.Library.Data
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Removes the specified key from the cache
+        /// </summary>
+        /// <param name="key">Key of the item to remove</param>
+        public void Remove(string key)
+        {
+            if (_cache.ContainsKey(key))
+            {
+                _cache.Remove(key);
+            }
         }
 
         /// <summary>

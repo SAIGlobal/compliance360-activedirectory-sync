@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,7 @@ using NLog;
 namespace Compliance360.EmployeeSync.Library.Data
 {
     public class CacheServiceFactory : ICacheServiceFactory
-    {
+    {        
         /// <summary>
         /// Creates a new cache service.
         /// </summary>

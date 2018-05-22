@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Compliance360.EmployeeSync.ApiV2Stream.Data;
+using Compliance360.EmployeeSync.ApiV2Stream.Services;
 using Compliance360.EmployeeSync.Library.Configuration;
 using Compliance360.EmployeeSync.Library.Data;
 using Compliance360.EmployeeSync.Library.OutputStreams;
@@ -29,6 +30,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             public const string EmployeeNum = "EmployeeNum";
             public const string Password = "Password";
             public const string CanLogin = "CanLogin";
+            public const string Relationships = "Relationships";
         }
 
         private class LoginSettings
@@ -47,7 +49,6 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             get { return _tokenDict["authToken"]; }
             set { _tokenDict["authToken"] = value; } 
         }
-        private IApiService ApiService { get; }
         private ICacheServiceFactory CacheServiceFactory { get; }
         private ICacheService EmployeeCache { get; set; }
         private ICacheService DivisionCache { get; set; }
@@ -57,28 +58,38 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         private ICacheService EmployeeGroupCache { get; set; }
         private ICacheService EmployeeProfileCache { get; set; }
         private ICacheService GroupMembershipCache { get; set; }
+        private ICacheService RelationshipTypeCache { get; set; }
+        private ICacheService EmployeeDistinguishedNameCache { get; set; }
+        private IAuthenticationService AuthenticationService { get; }
+        private IDepartmentService DepartmentService { get; }
+        private IDivisionService DivisionService { get; }
+        private IEmployeeService EmployeeService { get; }
+        private IGroupService GroupService { get; }
+        private IRelationshipService RelationshipService { get; }
 
         private System.Threading.Timer _timer;
+        private readonly Dictionary<Employee, SortedList<string, string>> _employeesWithRelationships = new Dictionary<Employee, SortedList<string, string>>();
 
-        /// <summary>
-        /// Initializes a new instance of the LoggerStream
-        /// </summary>
-        /// <param name="logger">Instance of the logger.</param>
-        /// <param name="apiService">The C360 API service for accessing employee information.</param>
-        /// <param name="cacheServiceFactory">Factory for returning cache service references.</param>
         public ApiStream(
             ILogger logger,
-            IApiService apiService,
-            ICacheServiceFactory cacheServiceFactory)
+            ICacheServiceFactory cacheServiceFactory,
+            IAuthenticationService authenticationService,
+            IDepartmentService departmentService,
+            IDivisionService divisionService,
+            IEmployeeService employeeService,
+            IGroupService groupService,
+            IRelationshipService relationshipService)
         {
             Logger = logger;
-            ApiService = apiService;
             CacheServiceFactory = cacheServiceFactory;
+            AuthenticationService = authenticationService;
+            DepartmentService = departmentService;
+            DivisionService = divisionService;
+            EmployeeService = employeeService;
+            GroupService = groupService;
+            RelationshipService = relationshipService;
         }
 
-        /// <summary>
-        /// Closes the stream and ends the api session
-        /// </summary>
         public void Close()
         {
             // cancel the renew login process
@@ -92,15 +103,12 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             EmployeeGroupCache?.WriteCacheEntries();
             EmployeeProfileCache?.WriteCacheEntries();
             GroupMembershipCache?.WriteCacheEntries();
+            RelationshipTypeCache?.WriteCacheEntries();
+            EmployeeDistinguishedNameCache?.WriteCacheEntries();
 
             Logger.Debug("Closed the Api Stream");
         }
 
-        /// <summary>
-        /// Opens the stream for writing
-        /// </summary>
-        /// <param name="jobConfig">The current job configuration.</param>
-        /// <param name="streamConfig">The stream configuration.</param>
         public void Open(JobElement jobConfig, StreamElement streamConfig)
         {
             JobConfig = jobConfig;
@@ -123,11 +131,20 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
                 Password = StreamConfig.Settings["password"]
             };
             
-            Login(loginSettings);
+            // get the base address
+            var apiAddress =
+                AuthenticationService.GetHostAddress(loginSettings.BaseAddress, loginSettings.Organization);
+            loginSettings.BaseAddress = apiAddress;
+
+            // set the base address for the api services
+            DepartmentService.SetBaseAddress(apiAddress);
+            DivisionService.SetBaseAddress(apiAddress);
+            EmployeeService.SetBaseAddress(apiAddress);
+            GroupService.SetBaseAddress(apiAddress);
+            RelationshipService.SetBaseAddress(apiAddress);
 
             // setup a task to renew the token on a regular interval
             // authenticate with the c360 api
-            
             _timer = new Timer(Login, loginSettings, loginInterval, loginInterval);
             
             // load the cache services for cached content
@@ -139,6 +156,9 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             EmployeeProfileCache = CacheServiceFactory.CreateCacheService(Logger, "EmployeeProfile", false);
             DivisionCache = CacheServiceFactory.CreateCacheService(Logger, "Division", false);
             GroupMembershipCache = CacheServiceFactory.CreateCacheService(Logger, "GroupMembership", false);
+            RelationshipTypeCache = CacheServiceFactory.CreateCacheService(Logger, "RelationshipType", false);
+            EmployeeDistinguishedNameCache =
+                CacheServiceFactory.CreateCacheService(Logger, "EmployeeDistinguishedName", true);
         }
 
         /// <summary>
@@ -150,17 +170,17 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             try
             {
                 var loginSettings = (LoginSettings) state;
-
+                
                 Logger.Debug("Logging in to API with BaseAddress:{0} Organization:{1} Username:{2} Password:{3}",
                     loginSettings.BaseAddress,
                     loginSettings.Organization,
                     loginSettings.Username,
                     loginSettings.Password);
 
-                AuthToken = ApiService.LoginAsync(loginSettings.BaseAddress,
+                AuthToken = AuthenticationService.Login(loginSettings.BaseAddress,
                     loginSettings.Organization,
                     loginSettings.Username,
-                    loginSettings.Password).GetAwaiter().GetResult();
+                    loginSettings.Password);
             }
             catch (Exception ex)
             {
@@ -182,9 +202,9 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             
             // process each of the field values in the map
             string employeeNum = null;
-            Entity workflowTemplate = null;
             Entity division = null;
             SortedList<string, string> groups = null;
+            var relationships = new SortedList<string, string>();
 
             foreach (MapElement map in StreamConfig.Mapping)
             {
@@ -216,6 +236,10 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
                     case SystemFields.WorkflowTemplate:
                         break;
 
+                    case SystemFields.Relationships:
+                        relationships[map.Type] = GetFieldValue(map.From, user);
+                        break;
+                        
                     default:
                         value = GetFieldValue(map.From, user);
                         break;
@@ -227,7 +251,22 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
                     employee[map.To] = value;
                 }
             }
-            
+
+            ProcessUserData(user,
+                employee,
+                employeeNum,
+                division,
+                groups,
+                relationships);
+        }
+
+        public void ProcessUserData(ActiveDirectoryUser user, 
+            Employee employee,
+            string employeeNum,
+            Entity division,
+            SortedList<string, string> groups,
+            SortedList<string, string> relationships)
+        {
             if (employeeNum == null)
             {
                 var userJson = JsonConvert.SerializeObject(user);
@@ -240,12 +279,6 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
                 var userJson = JsonConvert.SerializeObject(user);
                 Logger.Error("Error writing Employee to stream. Missing PrimaryDivision map \"to\" value. {0}", userJson);
                 return;
-            }
-
-            if (workflowTemplate == null)
-            {
-                workflowTemplate = GetDefaultWorkflowTemplate();
-                employee[SystemFields.WorkflowTemplate] = workflowTemplate;
             }
             
             // get the id of the employee from the cache...if found this is an update
@@ -268,9 +301,12 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             if (employee.Id == null)
             {
                 // create the new employee record
+                var workflowTemplate = GetDefaultWorkflowTemplate();
+                employee[SystemFields.WorkflowTemplate] = workflowTemplate;
+                
                 employee[SystemFields.CanLogin] = true;
                 employee[SystemFields.Password] = Guid.NewGuid().ToString();
-                
+
                 var newEmployeeId = ApiService.CreateEmployeeAsync(employee, AuthToken).GetAwaiter().GetResult();
                 employee.Id = newEmployeeId;
                 EmployeeCache.Add(employeeNum, newEmployeeId);
@@ -281,12 +317,105 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
                 ApiService.UpdateEmployeeAsync(employee, AuthToken).GetAwaiter().GetResult();
             }
 
+            // ensure the employee is in the DN cache
+            var dnCacheKey = user.Attributes["distinguishedName"].ToString();
+            EmployeeDistinguishedNameCache.Add(dnCacheKey, employee.Id);
+
             if (groups != null)
             {
                 ProcessGroupChanges(employee, groups.Values.ToList());
             }
+
+            if (relationships != null)
+            {
+                // this employee has relationships, store them
+                // for future processing once all of the employees have been created
+                _employeesWithRelationships[employee] = relationships;
+            }
         }
-        
+
+        /// <summary>
+        /// Saves the relationships from AD to the C360 application
+        /// </summary>
+        /// <param name="employee">The employee that owns the relationships</param>
+        /// <param name="relationships">The relatiobships to add/update</param>
+        public void ProcessRelationshipChanges(Employee employee, SortedList<string, string> relationships)
+        {
+            // fetch the online relationship info
+            var onlineRelationships = ApiService.GetEmployeeRelationships(employee, AuthToken).Result;
+            var onlineRelationDetails = new List<GetEmployeeRelationshipDetailsResponse>();
+            foreach (var relationshipId in onlineRelationships)
+            {
+                var relationDetails =
+                    ApiService.GetEmployeeRelationshipDetails(new Entity {Id = relationshipId}, AuthToken).Result;
+                onlineRelationDetails.Add(relationDetails);
+            }
+            
+            // process each of the relationships
+            foreach (var relTypeName in relationships.Keys)
+            {
+                // get the id of the employee...must be in the cache
+                var dn = relationships[relTypeName];
+                if (!EmployeeDistinguishedNameCache.ContainsKey(dn))
+                {
+                    Logger.Info($"Did not find employee for DN [{dn}] in the cache. Relationship will not be added.");
+                    continue;
+                }
+
+                var destEmployeeId = EmployeeDistinguishedNameCache.GetValue(dn);
+
+                // get the id of the correct relationship type
+                Entity relType = null;
+                if (RelationshipTypeCache.ContainsKey(relTypeName))
+                {
+                    relType = new Entity {Id = RelationshipTypeCache.GetValue(relTypeName)};
+                }
+                else
+                {
+                    // try to look up the type
+                    var typeId = ApiService.GetRelationshipTypeByNameAsync(relTypeName, AuthToken).Result;
+                    if (!string.IsNullOrEmpty(typeId))
+                    {
+                        // found it put it in the cache
+                        relType = new Entity {Id = typeId};
+                        RelationshipTypeCache.Add(relTypeName, relType.Id);
+                    }
+                    else
+                    {
+                        // was not present...need to create it
+                        var id = ApiService.CreateRelationshipTypeAsync(relTypeName, AuthToken).Result;
+                        relType = new Entity { Id = id };
+                        RelationshipTypeCache.Add(relTypeName, relType.Id);
+                    }
+                }
+                
+                // see if we can find the relationship in the online list
+                bool processed = false;
+                foreach (var onlineRel in onlineRelationDetails)
+                {
+                    if (onlineRel.Type.Id == relType.Id && onlineRel.Employee.Id == destEmployeeId)
+                    {
+                        // relationship exists..do nothing
+                        processed = true;
+                        break;
+                    }
+                    else if (onlineRel.Type.Id == relType.Id)
+                    {
+                        // if it is not the same, update it
+                        var res = ApiService.UpdateRelationshipAsync(onlineRel, destEmployeeId, AuthToken).Result;
+                        processed = true;
+                        break;
+                    }
+                }
+                
+                // not found create it
+                if (!processed)
+                {
+                    var newRelId = ApiService.CreateRelationshipAsync(employee, destEmployeeId, relType, AuthToken).Result;
+                }
+            }
+        }
+
         /// <summary>
         /// Returns the default workflow template
         /// </summary>
@@ -605,6 +734,17 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             }
 
             return userGroups;
+        }
+
+        public void StreamComplete()
+        {
+            if (_employeesWithRelationships != null && _employeesWithRelationships.Count > 0)
+            {
+                foreach (var employee in _employeesWithRelationships.Keys)
+                {
+                    ProcessRelationshipChanges(employee, _employeesWithRelationships[employee]);
+                }
+            }
         }
     }
 }

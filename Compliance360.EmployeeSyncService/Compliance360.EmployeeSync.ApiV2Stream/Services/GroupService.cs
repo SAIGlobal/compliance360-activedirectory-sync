@@ -12,39 +12,24 @@ using NLog;
 using Compliance360.EmployeeSync.Library.Data;
 using Compliance360.EmployeeSync.ApiV2Stream.Data;
 
-namespace Compliance360.EmployeeSync.ApiV2Stream
+namespace Compliance360.EmployeeSync.ApiV2Stream.Services
 {
-    /// <summary>
-    /// This class is responsible for making the API calls to the
-    /// Compliance 360 API. Please note that for performance considerations
-    /// this class will maintain a reference to the HttpClient once LoginAsync()
-    /// is called so that new HTTP sessions do not have to be established for 
-    /// each call.
-    /// </summary>
-    public class ApiService : IApiService
+    public class GroupService : IGroupService
     {
         private ILogger Logger { get; }
         private IHttpDataService Http { get; }
-        private string _groupsFolderId = null;
 
-        /// <summary>
-        /// Initializes a new instance of the APIv2Service
-        /// </summary>
-        /// <param name="logger">Reference to a logger instance.</param>
-        /// <param name="http">Reference to the HttpClient instance.</param>
-        public ApiService(ILogger logger, IHttpDataService http)
+        public GroupService(ILogger logger, IHttpDataService http)
         {
             Logger = logger;
             Http = http;
         }
 
-        /// <summary>
-        /// Creates a new department
-        /// </summary>
-        /// <param name="departmentName">The name of the department</param>
-        /// <param name="division">The division where the department will be created</param>
-        /// <param name="token">Current auth token</param>
-        /// <returns>String id of the new department</returns>
+        public void SetBaseAddress(string baseAddress)
+        {
+            Http.Initialize(baseAddress);
+        }
+
         public async Task<string> CreateDepartmentAsync(string departmentName, Entity division, string token)
         {
             Logger.Debug("Creating department [{0}]", departmentName);
@@ -63,18 +48,13 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             return result.Id;
         }
 
-        /// <summary>
-        /// Creates a new employee based on the supplied employee object
-        /// </summary>
-        /// <param name="employee">Objective describing the employee to create.</param>
-        /// <param name="token">The active AuthToken.</param>
-        /// <returns>String employee id</returns>
+        
         public async Task<string> CreateEmployeeAsync(Employee employee, string token)
         {
             Logger.Debug("Creating employee");
 
             var createEmployeeUri = $"/API/2.0/Data/EmployeeManagement/Employee/Default?token={token}";
-            
+
             // ensure required fields are present
             if (!employee.ContainsKey("FirstName") || string.IsNullOrEmpty(employee["FirstName"] as string))
             {
@@ -101,12 +81,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             return result.Id;
         }
 
-        /// <summary>
-        /// Creates a new group
-        /// </summary>
-        /// <param name="groupName">Name of the new group.</param>
-        /// <param name="token">Auth token.</param>
-        /// <returns>String id of the new group.</returns>
+        
         public async Task<string> CreateGroupAsync(string groupName, string token)
         {
             Logger.Debug("Creating group [{0}]", groupName);
@@ -159,12 +134,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             return result.Id;
         }
 
-        /// <summary>
-        /// Creates a new relationship type value like "Manager" 
-        /// </summary>
-        /// <param name="relationshipType">The type of relationship.</param>
-        /// <param name="token">The current auth token.</param>
-        /// <returns>Id of the relationship type</returns>
+        
         public async Task<string> CreateRelationshipTypeAsync(string relationshipType, string token)
         {
             Logger.Debug("Creating Relationship Type [{0}]", relationshipType);
@@ -180,7 +150,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
 
             return result.Id;
         }
-        
+
         public async Task<string> CreateRelationshipAsync(Employee employee, string destEmployeeId, Entity relType, string token)
         {
             Logger.Debug("Creating Relationship for Employee [{0}], related to [{1}]", employee.Id, destEmployeeId);
@@ -198,11 +168,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             return newRelationship.Id;
         }
 
-        /// <summary>
-        /// Gets the id of the default workflow template.
-        /// </summary>
-        /// <param name="token">The current auth token.</param>
-        /// <returns></returns>
+        
         public async Task<string> GetDefaultWorkflowTemplateAsync(string token)
         {
             Logger.Debug("Getting default Workflow");
@@ -215,37 +181,26 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             return resp.Data?.FirstOrDefault()?.Id;
         }
 
-        /// <summary>
-        /// Gets a department based on its name
-        /// </summary>
-        /// <param name="departmentName">The name of the department to find.</param>
-        /// <param name="division">The id of the division which should contain the department.</param>
-        /// <param name="token">The current active auth token.</param>
-        /// <returns>String Id of the department.</returns>
+        
         public async Task<string> GetDepartmentAsync(
-            string departmentName, 
-            Entity division, 
+            string departmentName,
+            Entity division,
             string token)
         {
             Logger.Debug("Getting department [{0}]", departmentName);
 
             var where =
                 $"((DeptNum='{Uri.EscapeDataString(departmentName)}')|(DeptName='{Uri.EscapeDataString(departmentName)}'))";
-            
+
             var findDepartmentUri =
                 $"/API/2.0/Data/EmployeeManagement/EmployeeDepartment/Default?take=1&where={where}&token={token}";
 
             var resp = await Http.GetAsync<GetResponse<Entity>>(findDepartmentUri);
-            
+
             return resp.Data?.FirstOrDefault()?.Id;
         }
 
-        /// <summary>
-        /// Gets a Division based on the supplied division path.
-        /// </summary>
-        /// <param name="divisionPath">The Path of the division</param>
-        /// <param name="token"></param>
-        /// <returns></returns>
+        
         public async Task<string> GetDivisionAsync(string divisionPath, string token)
         {
             Logger.Debug("Getting division [{0}]", divisionPath);
@@ -258,12 +213,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             return resp.Data?.FirstOrDefault()?.Id;
         }
 
-        /// <summary>
-        /// Gets an employee based on the supplied username.
-        /// </summary>
-        /// <param name="employeeNum">The employee number (unique id) of the employee to find.</param>
-        /// <param name="token">The active AuthToken.</param>
-        /// <returns>String employee id</returns>
+        
         public async Task<string> GetEmployeeIdAsync(string employeeNum, string token)
         {
             Logger.Debug("Getting Id of Employee using EmployeeNumber [{0}]", employeeNum);
@@ -275,12 +225,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             return resp.Data?.FirstOrDefault()?.Id;
         }
 
-        /// <summary>
-        /// Gets the local profile id for the specified user.
-        /// </summary>
-        /// <param name="employee">The current employee</param>
-        /// <param name="token">Auth token</param>
-        /// <returns>String identifier of the employee's local profile</returns>
+        
         public async Task<string> GetEmployeeProfileIdAsync(Entity employee, string token)
         {
             Logger.Debug("Getting Profile for Employee [{0}]", employee.Id);
@@ -292,12 +237,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             return resp.Data?.FirstOrDefault()?.Profile.Id;
         }
 
-        /// <summary>
-        /// Gets the a list of employee relationships that belong to the specified user.
-        /// </summary>
-        /// <param name="employee">The current employee</param>
-        /// <param name="token">Auth token</param>
-        /// <returns>List of string identifiers for the owned relationships</returns>
+        
         public async Task<List<string>> GetEmployeeRelationships(Employee employee, string token)
         {
             Logger.Debug("Getting Relationships for Employee [{0}]", employee.Id);
@@ -311,23 +251,18 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             return ids?.ToList();
         }
 
-        public async Task<GetEmployeeRelationshipDetailsResponse> GetEmployeeRelationshipDetails(Entity relationship, string token)
+        public async Task<Relationship> GetEmployeeRelationshipDetails(Entity relationship, string token)
         {
             Logger.Debug("Getting details for Relationship [{0}]", relationship.Id);
 
             var getEmployeeRelationshipUri = $"/API/2.0/Data/EmployeeManagement/EmployeeRelationship/Default?select=Employee,Type&where=InstanceId='{relationship.Id}'&token={token}";
 
-            var resp = await Http.GetAsync<GetResponse<GetEmployeeRelationshipDetailsResponse>>(getEmployeeRelationshipUri);
+            var resp = await Http.GetAsync<GetResponse<Relationship>>(getEmployeeRelationshipUri);
 
             return resp.Data?.FirstOrDefault();
         }
 
-        /// <summary>
-        /// Gets a group based on its name
-        /// </summary>
-        /// <param name="groupName">Name of the group to find.</param>
-        /// <param name="token">Current auth token.</param>
-        /// <returns></returns>
+        
         public async Task<string> GetGroupAsync(string groupName, string token)
         {
             Logger.Debug("Getting Group [{0}]", groupName);
@@ -340,12 +275,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             return resp.Data?.FirstOrDefault()?.Id;
         }
 
-        /// <summary>
-        /// Gets the Id of the "Groups" folder where the
-        /// groups will be created.
-        /// </summary>
-        /// <param name="token">Auth token</param>
-        /// <returns>Id of the Groups folder</returns>
+        
         public async Task<string> GetGroupsFolderAsync(string token)
         {
             Logger.Debug("Getting \"Groups\" root folder");
@@ -354,17 +284,12 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
                 $"/API/2.0/Data/Global/Folders/Default?select=Name,Parent,Division&where=Name='Groups'&token={token}";
 
             var resp = await Http.GetAsync<GetResponse<Folder>>(getGroupsFolderUri);
-            
+
             var folder = resp.Data?.FirstOrDefault(f => f.Parent.Id == "NULL" && f.Division.Id == "NULL");
             return folder?.Id;
         }
 
-        /// <summary>
-        /// Returns a dictionary of groups for which the user is a member.
-        /// </summary>
-        /// <param name="profileId">The local profile id.</param>
-        /// <param name="token">The auth token.</param>
-        /// <returns></returns>
+        
         public async Task<List<string>> GetGroupMembershipAsync(Entity profile, string token)
         {
             Logger.Debug("Getting Group Membership for [{0}]", profile.Id);
@@ -388,12 +313,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             return null;
         }
 
-        /// <summary>
-        /// Gets a group name based on its Id
-        /// </summary>
-        /// <param name="groupId">Id of the group to find.</param>
-        /// <param name="token">Auth token</param>
-        /// <returns>Name of the group</returns>
+        
         public async Task<string> GetGroupNameAsync(string groupId, string token)
         {
             Logger.Debug("Getting Group Name for [{0}]", groupId);
@@ -404,31 +324,18 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             var resp = await Http.GetAsync<GetResponse<EmployeeGroup>>(getGroupUri);
 
             return resp.Data?.FirstOrDefault()?.GroupName;
-        }
+        }   
 
-        /// <summary>
-        /// Returns a job title by name
-        /// </summary>
-        /// <param name="name">Name of the job title.</param>
-        /// <param name="division">The entity id of the division that contains the job title.</param>
-        /// <param name="token">The auth token.</param>
-        /// <returns>Job title id</returns>
         public async Task<string> GetJobTitleAsync(string name, Entity division, string token)
         {
             Logger.Debug("Getting Job Title [{0}]", name);
 
             var jobTitlesUri = $"/API/2.0/Data/Lookup/Employee/JobTitleId?select=Text&take=1&where=Text='{Uri.EscapeDataString(name)}'&token={token}";
             var resp = await Http.GetAsync<GetResponse<Entity>>(jobTitlesUri);
-            
+
             return resp.Data?.FirstOrDefault()?.Id;
         }
-
-        /// <summary>
-        /// Returns a relationship type by name
-        /// </summary>
-        /// <param name="name">Name of the relationship type.</param>
-        /// <param name="token">The auth token.</param>
-        /// <returns>Job title id</returns>
+        
         public async Task<string> GetRelationshipTypeByNameAsync(string name, string token)
         {
             Logger.Debug("Getting Relationship Type [{0}]", name);
@@ -439,11 +346,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             return resp.Data?.FirstOrDefault()?.Id;
         }
 
-        /// <summary>
-        /// Get host address 
-        /// </summary>
-        /// <param name="organization">Organization name</param>
-        /// <returns>Address of the API for the organization.</returns>
+       
         public async Task<string> GetHostAddressAsync(string organization)
         {
             Logger.Debug("Getting Host Address for organization [{0}]", organization);
@@ -461,21 +364,14 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             return resp.Host;
         }
 
-        /// <summary>
-        /// Logs into the C360 API. Returns the API auth token.
-        /// </summary>
-        /// <param name="baseAddress">The base uri of the api.</param>
-        /// <param name="organization">The organization name.</param>
-        /// <param name="username">The username.</param>
-        /// <param name="password">The password.</param>
-        /// <returns></returns>
+       
         public async Task<string> LoginAsync(string baseAddress, string organization, string username, string password)
         {
             Logger.Debug("Logging in to API Organization:{0} Username:{1}", organization, username);
 
             // init the http client
             Http.Initialize(baseAddress);
-            
+
             // get the api host address based on the organization
             var hostAddress = await GetHostAddressAsync(organization);
             if (hostAddress != baseAddress)
@@ -495,15 +391,11 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             const string loginUri = "/API/2.0/Security/Login";
 
             var resp = await Http.PostAsync<LoginResponse>(loginUri, loginData);
-            
+
             return resp.Token;
         }
 
-        /// <summary>
-        /// Logs the user out of the C360 application terminating the session.
-        /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
+        
         public async Task<bool> LogoutAsync(string token)
         {
             Logger.Debug("Logging out of API");
@@ -514,19 +406,13 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             return true;
         }
 
-        /// <summary>
-        /// Updates an employee using the API
-        /// </summary>
-        /// <param name="employeeId">Id token of the employee to update</param>
-        /// <param name="employee">The employee metadata object</param>
-        /// <param name="token">The current active auth token</param>
-        /// <returns>Void</returns>
+        
         public async Task<bool> UpdateEmployeeAsync(Employee employee, string token)
         {
             Logger.Debug("Updating Employee [{0}]", employee.Id);
 
             var createEmployeeUri = $"/API/2.0/Data/EmployeeManagement/Employee/Default/{employee.InstanceId}?token={token}";
-            
+
             // ensure required fields are present
             if (employee.ContainsKey("FirstName") && string.IsNullOrEmpty(employee["FirstName"] as string))
             {
@@ -547,13 +433,12 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             {
                 employeeUpdateRequest[key] = employee[key];
             }
-            
+
             var resp = await Http.PostAsync<CreateResponse>(createEmployeeUri, employeeUpdateRequest);
-            
+
             return true;
         }
 
-        
         public async Task<bool> UpdateEmployeeProfileAsync(Profile profile, List<Entity> groupsToAdd, List<Entity> groupsToRemove, string token)
         {
             Logger.Debug("Updating Employee Profile [{0}]", profile.Id);
@@ -564,23 +449,23 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             var updateProfileUri = $"/API/2.0/Data/EmployeeManagement/EmployeeProfile/Default/{profile.InstanceId}?token={token}";
 
             profile.Groups = new List<EntityReference>();
-            
+
             groupsToAdd.ForEach(g =>
             {
-                profile.Groups.Add(new EntityReference { Action = "Add", Id=g.Id});
+                profile.Groups.Add(new EntityReference { Action = "Add", Id = g.Id });
             });
 
             groupsToRemove.ForEach(g =>
             {
                 profile.Groups.Add(new EntityReference { Action = "Remove", Id = g.Id });
             });
-           
+
             await Http.PostAsync<CreateResponse>(updateProfileUri, profile);
-            
+
             return true;
         }
 
-        public async Task<bool> UpdateRelationshipAsync(GetEmployeeRelationshipDetailsResponse relationship, 
+        public async Task<bool> UpdateRelationshipAsync(Relationship relationship,
             string destEmployeeId,
             string token)
         {
@@ -590,7 +475,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
 
             var relToUpdate = new Relationship
             {
-                Employee = new Entity {Id = destEmployeeId},
+                Employee = new Entity { Id = destEmployeeId },
                 Type = relationship.Type
             };
 

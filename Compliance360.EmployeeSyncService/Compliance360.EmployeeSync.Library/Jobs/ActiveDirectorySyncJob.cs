@@ -80,6 +80,20 @@ namespace Compliance360.EmployeeSync.Library.Jobs
                 Logger.Error(ex);
             }
 
+            // tell each of the streams that process is complete
+            // this allows for any post processing behavior
+            foreach (var stream in streams)
+            {
+                try
+                {
+                    stream.StreamComplete();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex);
+                }
+            }
+
             // close each of the streams
             foreach (var stream in streams)
             {

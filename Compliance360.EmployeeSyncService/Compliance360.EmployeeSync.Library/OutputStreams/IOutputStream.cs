@@ -12,6 +12,8 @@ namespace Compliance360.EmployeeSync.Library.OutputStreams
     {
         void Open(JobElement jobConfig, StreamElement streamConfig);
 
+        void StreamComplete();
+
         void Close();
 
         void Write(ActiveDirectoryUser user);
