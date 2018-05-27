@@ -73,9 +73,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApiServiceTest.cs" />
     <Compile Include="EntityTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\RelationshipServiceTests.cs" />
+    <Compile Include="Services\GroupServiceTests.cs" />
+    <Compile Include="Services\EmployeeServiceTests.cs" />
+    <Compile Include="Services\DivisionServiceTests.cs" />
+    <Compile Include="Services\DepartmentServiceTests.cs" />
+    <Compile Include="Services\AuthenticationServiceTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Compliance360.EmployeeSync.ApiV2Stream\Compliance360.EmployeeSync.ApiV2Stream.csproj">
@@ -88,6 +93,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config.template" />
     <None Include="App.config" />
     <EmbeddedResource Include="Data\CreateDepartmentResponse.json" />
     <EmbeddedResource Include="Data\FindDepartmentResponse.json" />

@@ -94,6 +94,7 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="App.config.template" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

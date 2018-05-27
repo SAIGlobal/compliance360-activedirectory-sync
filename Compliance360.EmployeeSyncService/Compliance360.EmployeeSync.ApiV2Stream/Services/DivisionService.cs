@@ -30,7 +30,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Services
             Http.Initialize(baseAddress);
         }
         
-        public async Task<Entity> GetDivisionAsync(string divisionPath, string token)
+        public async Task<Entity> GetDivisionByNameAsync(string divisionPath, string token)
         {
             Logger.Debug("Getting division [{0}]", divisionPath);
 
@@ -39,12 +39,14 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Services
 
             var resp = await Http.GetAsync<GetResponse<Entity>>(findDivisionUri);
 
-            return new Entity {Id = resp.Data?.FirstOrDefault()?.Id};
+            var id = resp.Data?.FirstOrDefault()?.Id;
+
+            return id != null ? new Entity {Id = id} : null;
         }
 
-        public Entity GetDivision(string divisionPath, string token)
+        public Entity GetDivisionByName(string divisionPath, string token)
         {
-            return GetDivisionAsync(divisionPath, token).Result;
+            return GetDivisionByNameAsync(divisionPath, token).Result;
         }
     }
 }

@@ -38,7 +38,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Services
         /// <param name="groupName">Name of the group to find.</param>
         /// <param name="token">Current auth token.</param>
         /// <returns>Entity reference to the group.</returns>
-        Task<Entity> GetGroupAsync(string groupName, string token);
+        Task<Entity> GetGroupByNameAsync(string groupName, string token);
 
         /// <summary>
         /// Gets a group based on its name
@@ -46,7 +46,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Services
         /// <param name="groupName">Name of the group to find.</param>
         /// <param name="token">Current auth token.</param>
         /// <returns>Entity reference to the group.</returns>
-        Entity GetGroup(string groupName, string token);
+        Entity GetGroupByName(string groupName, string token);
 
         /// <summary>
         /// Gets the Id of the "Groups" folder where the

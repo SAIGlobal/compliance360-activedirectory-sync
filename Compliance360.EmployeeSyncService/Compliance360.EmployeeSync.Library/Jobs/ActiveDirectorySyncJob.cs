@@ -65,9 +65,9 @@ namespace Compliance360.EmployeeSync.Library.Jobs
                         {
                             stream.Write(user);
                         }
-                        catch (DataException ex)
+                        catch (Exception ex)
                         {
-                            // catch data exceptions at the user level
+                            // catch exceptions at the user level
                             // and log them, then keep going since we do not
                             // want to stop processing other users
                             Logger.Error(ex);

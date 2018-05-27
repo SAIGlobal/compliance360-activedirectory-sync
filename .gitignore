@@ -8,6 +8,11 @@
 *.sln.docstates
 *.userprefs
 
+# app config files
+# the project may contain a template that can be used
+# as a local app.config. Blocking these files as they too often contain credentials.
+[Aa]pp.config
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

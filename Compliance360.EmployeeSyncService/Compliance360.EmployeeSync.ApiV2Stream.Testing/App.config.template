@@ -9,7 +9,7 @@
   <compliance360.sync>
     <jobs>
       <job name="All Users" 
-           type="ActiveDirectory"
+           type="ActiveDirectory" 
            domain="" 
            ou="" 
            userName="" 

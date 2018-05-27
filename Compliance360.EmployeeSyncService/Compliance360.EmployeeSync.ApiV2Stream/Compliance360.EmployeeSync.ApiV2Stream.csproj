@@ -54,21 +54,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApiService.cs" />
     <Compile Include="ApiStream.cs" />
     <Compile Include="ContainerRegistry.cs" />
     <Compile Include="Data\EmployeeGroup.cs" />
+    <Compile Include="Data\EmployeeRelationshipRequest.cs" />
     <Compile Include="Data\EntityReference.cs" />
     <Compile Include="Data\Folder.cs" />
     <Compile Include="Data\GetEmployeeProfileIdResponse.cs" />
     <Compile Include="Data\GetEmployeeRelationshipResponse.cs" />
     <Compile Include="Data\HostResponse.cs" />
     <Compile Include="Data\LoginResponse.cs" />
+    <Compile Include="Data\UpdateProfile.cs" />
     <Compile Include="Data\Profile.cs" />
     <Compile Include="Data\Relationship.cs" />
     <Compile Include="FieldTypes.cs" />
     <Compile Include="HttpClientHandler.cs" />
-    <Compile Include="IApiService.cs" />
     <Compile Include="IHttpClientHandler.cs" />
     <Compile Include="IHttpDataService.cs" />
     <Compile Include="Data\CreateResponse.cs" />

@@ -33,6 +33,22 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Services
         Entity CreateEmployee(Employee employee, string token);
 
         /// <summary>
+        /// Creates a new Job Title.
+        /// </summary>
+        /// <param name="jobTitleName">The name of the new job title.</param>
+        /// <param name="token">The current AuthToken.</param>
+        /// <returns></returns>
+        Task<Entity> CreateJobTitleAsync(string jobTitleName, string token);
+
+        /// <summary>
+        /// Creates a new Job Title.
+        /// </summary>
+        /// <param name="jobTitleName">The name of the new job title.</param>
+        /// <param name="token">The current AuthToken.</param>
+        /// <returns></returns>
+        Entity CreateJobTitle(string jobTitleName, string token);
+
+        /// <summary>
         /// Gets the id of the default workflow template.
         /// </summary>
         /// <param name="token">The current auth token.</param>

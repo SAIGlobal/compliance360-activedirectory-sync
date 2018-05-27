@@ -19,10 +19,10 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Services
         /// <summary>
         /// Gets a Division based on the supplied division path.
         /// </summary>
-        /// <param name="divisionPath">The Path of the division</param>
+        /// <param name="divisionName">The Path of the division</param>
         /// <param name="token"></param>
         /// <returns>Entity reference to the Division</returns>
-        Task<Entity> GetDivisionAsync(string divisionName, string token);
+        Task<Entity> GetDivisionByNameAsync(string divisionName, string token);
 
         /// <summary>
         /// Gets a Division based on the supplied division path.
@@ -30,6 +30,6 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Services
         /// <param name="divisionPath">The Path of the division</param>
         /// <param name="token"></param>
         /// <returns>Entity reference to the Division</returns>
-        Entity GetDivision(string divisionName, string token);
+        Entity GetDivisionByName(string divisionName, string token);
     }
 }
