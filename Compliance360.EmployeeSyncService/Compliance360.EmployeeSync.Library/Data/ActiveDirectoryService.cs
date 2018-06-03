@@ -14,7 +14,6 @@ namespace Compliance360.EmployeeSync.Library.Data
     {
         public const string AttributeWhenChanged = "whenChanged";
         public const string AttributeDistinguishedName = "distinguishedName";
-        private bool _disposedValue;
 
         public ILogger Logger { get; }
         private IUserFilterFactory UserFilterFactory { get; }
