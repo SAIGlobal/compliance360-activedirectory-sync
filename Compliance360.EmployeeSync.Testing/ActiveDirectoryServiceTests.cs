@@ -94,8 +94,8 @@ namespace Compliance360.EmployeeSync.Testing
         [Test]
         public void TestGetBaseLdapAddressDomainAndOu()
         {
-            var address = ActiveDirectoryService.GetBaseLdapAddress("test.domain.com", "corporate");
-            Assert.AreEqual(address, "LDAP://Ou=corporate,DC=test,DC=domain,DC=com");
+            var address = ActiveDirectoryService.GetBaseLdapAddress("test.domain.com", "OU=corporate");
+            Assert.AreEqual(address, "LDAP://OU=corporate,DC=test,DC=domain,DC=com");
         }
 
         [Test]

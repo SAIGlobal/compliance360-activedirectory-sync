@@ -110,6 +110,8 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Services
         {
             Logger.Debug("Getting Id of Employee using EmployeeNumber [{0}]", employeeNum);
 
+            employeeNum = employeeNum.Replace("'", "''");
+
             var findEmployeeUri = $"/API/2.0/Data/EmployeeManagement/Employee/Default?take=1&where=EmployeeNum='{Uri.EscapeDataString(employeeNum)}'&token={token}";
 
             var resp = await Http.GetAsync<GetResponse<Entity>>(findEmployeeUri);
@@ -143,6 +145,8 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Services
         public async Task<Entity> GetJobTitleAsync(string name, string token)
         {
             Logger.Debug("Getting Job Title [{0}]", name);
+
+            name = name.Replace("'", "''");
 
             var jobTitlesUri = $"/API/2.0/Data/Lookup/Employee/JobTitleId?select=Text&take=1&where=Text='{Uri.EscapeDataString(name)}'&token={token}";
             var resp = await Http.GetAsync<GetResponse<Entity>>(jobTitlesUri);

@@ -60,6 +60,8 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Services
         {
             Logger.Debug("Getting department [{0}]", departmentName);
 
+            departmentName = departmentName.Replace("'", "''");
+
             var where =
                 $"((DeptNum='{Uri.EscapeDataString(departmentName)}')|(DeptName='{Uri.EscapeDataString(departmentName)}'))";
 

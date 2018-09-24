@@ -47,8 +47,8 @@ namespace Compliance360.EmployeeSync.Testing
             var groupFilter = new GroupsAttributeFilter();
             var val = groupFilter.Execute(null, result, job, memberOf);
 
-            Assert.True(val is Dictionary<string, string>);
-            var groups = (Dictionary<string, string>)val;
+            Assert.True(val is SortedList<string, string>);
+            var groups = (SortedList<string, string>)val;
             Assert.AreEqual("C360-Users", groups["CN=C360-Users,Ou=Groups,Ou=Epublish,DC=saig,DC=frd,DC=global"]);
         }
 
@@ -87,8 +87,8 @@ namespace Compliance360.EmployeeSync.Testing
             var groupFilter = new GroupsAttributeFilter();
             var val = groupFilter.Execute(null, result, job, memberOf);
 
-            Assert.True(val is Dictionary<string, string>);
-            var groups = (Dictionary<string, string>)val;
+            Assert.True(val is SortedList<string, string>);
+            var groups = (SortedList<string, string>)val;
             Assert.AreEqual("Users", groups["CN=C360-Users,Ou=Groups,Ou=Epublish,DC=saig,DC=frd,DC=global"]);
         }
     }

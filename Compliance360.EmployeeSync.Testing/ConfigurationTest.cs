@@ -37,7 +37,6 @@ namespace Compliance360.EmployeeSync.Testing
                 Assert.AreEqual(job.Password, "Password");
                 Assert.AreEqual(job.RemoveGroupPrefix, "RemoveGroupPrefix");
                 Assert.AreEqual(job.Type, "Type");
-                
                 Assert.Greater(job.Groups.Count, 0);
 
                 foreach (GroupElement grp in job.Groups)

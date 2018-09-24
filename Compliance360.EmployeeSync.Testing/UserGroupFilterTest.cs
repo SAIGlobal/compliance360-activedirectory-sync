@@ -49,7 +49,7 @@ namespace Compliance360.EmployeeSync.Testing
         public void TestUserGroupFilterNoMatch()
         {
             var user = new ActiveDirectoryUser();
-            var groups = new Dictionary<string, string>();
+            var groups = new SortedList<string, string>();
             user.Attributes["memberOf"] = groups;
 
             var jobElement = new JobElement();
