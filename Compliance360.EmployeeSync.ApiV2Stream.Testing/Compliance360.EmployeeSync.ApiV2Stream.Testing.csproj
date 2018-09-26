@@ -116,6 +116,7 @@
     <EmbeddedResource Include="Data\UpdateProfileResponse.json" />
     <EmbeddedResource Include="Data\GetEmployeeRelationshipsResponse.json" />
     <EmbeddedResource Include="Data\GetRelationshipDetailsResponse.json" />
+    <EmbeddedResource Include="Data\FindDepartmentMissingResponse.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

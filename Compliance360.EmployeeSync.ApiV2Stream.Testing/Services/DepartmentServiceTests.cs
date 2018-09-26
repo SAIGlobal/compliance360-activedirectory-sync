@@ -79,7 +79,36 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Testing.Services
 
             Assert.AreEqual("EmployeeManagement/EmployeeDepartment/Default:1", department.Id);
         }
-       
+
+        [Test(Description = "Tests the ability to find a department")]
+        public void TestFindMissingDepartment()
+        {
+            var division = new Entity { Id = "EmployeeManagement/EmployeeDivision/Default:1" };
+            var logger = new Mock<ILogger>();
+
+            // create the mock response message
+            var responseContent =
+                ReadJsonContentResource(
+                    "Compliance360.EmployeeSync.ApiV2Stream.Testing.Data.FindDepartmentMissingResponse.json");
+            var responseMessage = new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(responseContent)
+            };
+
+            var httpClient = new Mock<IHttpClientHandler>();
+            httpClient.Setup(h => h.GetAsync(It.IsAny<string>()))
+                .Returns(Task.FromResult(responseMessage));
+
+            var httpDataService = new HttpDataService(logger.Object, httpClient.Object);
+
+            var apiService = new DepartmentService(logger.Object, httpDataService);
+
+            var department = apiService.GetDepartmentAsync("TEST_DEPARTMENT", division, "mock_token").Result;
+
+            Assert.That(department, Is.Null);
+        }
+
         public string ReadJsonContentResource(string resourceName)
         {
             var assembly = Assembly.GetExecutingAssembly();

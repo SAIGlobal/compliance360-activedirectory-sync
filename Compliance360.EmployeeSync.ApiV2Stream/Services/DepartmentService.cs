@@ -70,7 +70,8 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Services
 
             var resp = await Http.GetAsync<GetResponse<Entity>>(findDepartmentUri);
 
-            return new Entity {Id = resp.Data?.FirstOrDefault()?.Id};
+            var id = resp.Data?.FirstOrDefault()?.Id;
+            return id == null ? null : new Entity {Id = id};
         }
 
         public Entity GetDepartment(
