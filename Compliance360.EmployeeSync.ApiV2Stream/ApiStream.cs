@@ -24,7 +24,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         {
             public const string Department = "Department";
             public const string Groups = "Groups";
-            public const string JobTitleId = "JobTitleId";
+            //public const string JobTitleId = "JobTitleId";
             public const string PrimaryDivision = "PrimaryDivision";
             public const string WorkflowTemplate = "WorkflowTemplate";
             public const string EmployeeNum = "EmployeeNum";
@@ -60,12 +60,14 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         private ICacheService GroupMembershipCache { get; set; }
         private ICacheService RelationshipTypeCache { get; set; }
         private ICacheService EmployeeDistinguishedNameCache { get; set; }
+        private ICacheService LookupCache { get; set; }
         private IAuthenticationService AuthenticationService { get; }
         private IDepartmentService DepartmentService { get; }
         private IDivisionService DivisionService { get; }
         private IEmployeeService EmployeeService { get; }
         private IGroupService GroupService { get; }
         private IRelationshipService RelationshipService { get; }
+        private ILookupService LookupService { get; }
 
         private System.Threading.Timer _timer;
         private readonly Dictionary<Employee, SortedList<string, string>> _employeesWithRelationships = new Dictionary<Employee, SortedList<string, string>>();
@@ -78,7 +80,8 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             IDivisionService divisionService,
             IEmployeeService employeeService,
             IGroupService groupService,
-            IRelationshipService relationshipService)
+            IRelationshipService relationshipService,
+            ILookupService lookupService)
         {
             Logger = logger;
             CacheServiceFactory = cacheServiceFactory;
@@ -88,6 +91,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             EmployeeService = employeeService;
             GroupService = groupService;
             RelationshipService = relationshipService;
+            LookupService = lookupService;
         }
 
         public void Close()
@@ -105,6 +109,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             GroupMembershipCache?.WriteCacheEntries();
             RelationshipTypeCache?.WriteCacheEntries();
             EmployeeDistinguishedNameCache?.WriteCacheEntries();
+            LookupCache?.WriteCacheEntries();
 
             Logger.Debug("Closed the Api Stream");
         }
@@ -149,6 +154,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             EmployeeService.SetBaseAddress(apiAddress);
             GroupService.SetBaseAddress(apiAddress);
             RelationshipService.SetBaseAddress(apiAddress);
+            LookupService.SetBaseAddress(apiAddress);
 
             // setup a task to renew the token on a regular interval
             // authenticate with the c360 api
@@ -166,6 +172,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             RelationshipTypeCache = CacheServiceFactory.CreateCacheService(Logger, "RelationshipType", false);
             EmployeeDistinguishedNameCache =
                 CacheServiceFactory.CreateCacheService(Logger, "EmployeeDistinguishedName", true);
+            LookupCache = CacheServiceFactory.CreateCacheService(Logger, "Lookup", false);
         }
 
         /// <summary>
@@ -201,12 +208,12 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
                 object value = null;
                 switch (map.To)
                 {
-                    case SystemFields.JobTitleId:
-                        value = GetJobTitleValue(map.From, user);
-                        break;
+                    //case SystemFields.JobTitleId:
+                    //    value = GetJobTitleValue(map.From, user);
+                    //    break;
 
                     case SystemFields.EmployeeNum:
-                        employeeNum = GetFieldValue(map.From, user);
+                        employeeNum = GetFieldValueDefault(map.From, user);
                         value = employeeNum;
                         break;
                         
@@ -227,11 +234,11 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
                         break;
 
                     case SystemFields.Relationships:
-                        relationships[map.Type] = GetFieldValue(map.From, user);
+                        relationships[map.Type] = GetFieldValueDefault(map.From, user);
                         break;
                         
                     default:
-                        value = GetFieldValue(map.From, user);
+                        value = GetFieldValue(map.From, map.To, map.Type, user);
                         break;
                 }
 
@@ -481,7 +488,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             Entity division)
         {
             // get the department name
-            var departmentName = GetFieldValue(from, user);
+            var departmentName = GetFieldValueDefault(from, user);
             if (string.IsNullOrEmpty(departmentName))
             {
                 return null;
@@ -522,7 +529,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         public Entity GetDivisionFieldValue(string from, ActiveDirectoryUser user)
         {
             // get the division name value
-            var divisionName = GetFieldValue(from, user);
+            var divisionName = GetFieldValueDefault(from, user);
 
             // check the cache
             if (DivisionCache.ContainsKey(divisionName))
@@ -545,9 +552,36 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         /// Gets the value from the user object
         /// </summary>
         /// <param name="from">The from value to parse</param>
+        /// <param name="to">The destination field value</param>
+        /// <param name="type">The optional type of field</param>
         /// <param name="user">The user object that contains the data.</param>
         /// <returns></returns>
-        public string GetFieldValue(string from, ActiveDirectoryUser user)
+        public object GetFieldValue(string from, string to, string type, ActiveDirectoryUser user)
+        {
+            if (string.IsNullOrEmpty(type))
+            {
+                return GetFieldValueDefault(from, user);
+            }
+            else if (type == FieldTypes.Lookup)
+            {
+                var lookupValue = GetFieldValueDefault(from, user);
+                if (!string.IsNullOrEmpty(lookupValue))
+                {
+                    return GetLookupFieldValue(to, lookupValue);
+                }
+            }
+
+            return null;
+        }
+
+        
+        /// <summary>
+        /// Gets the value from the user object
+        /// </summary>
+        /// <param name="from">The from value to parse</param>
+        /// <param name="user">The user object that contains the data.</param>
+        /// <returns></returns>
+        public string GetFieldValueDefault(string from, ActiveDirectoryUser user)
         {
             var fieldValue = from;
             var regex = new Regex("{[^}]*}");
@@ -605,7 +639,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         public Entity GetJobTitleValue(string from, ActiveDirectoryUser user)
         {
             // get the field value for the job title name
-            var jobTitleValue = GetFieldValue(from, user);
+            var jobTitleValue = GetFieldValueDefault(from, user);
             if (string.IsNullOrEmpty(jobTitleValue))
             {
                 return null;
@@ -629,6 +663,38 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             {
                 JobTitleCache.Add(jobTitleValue, jobTitle.Id);
                 return jobTitle;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets a Lookup value 
+        /// </summary>
+        /// <param name="lookupFieldName">The lookup field name.</param>
+        /// <param name="lookupFieldValue">The lookup field value.</param>
+        /// <returns></returns>
+        public Entity GetLookupFieldValue(string lookupFieldName, string lookupFieldValue)
+        {
+            // check the cache 
+            var cacheKey = $"{lookupFieldName}:{lookupFieldValue}";
+            if (LookupCache.ContainsKey(cacheKey))
+                return new Entity { Id = LookupCache.GetValue(cacheKey) };
+
+            // lookup does not exist in the cache...try to get it
+            var lookup = LookupService.GetLookupValue(lookupFieldName, lookupFieldValue, AuthToken);
+            if (lookup != null)
+            {
+                LookupCache.Add(cacheKey, lookup.Id);
+                return lookup;
+            }
+
+            // did not find the lookup in the system so add it.
+            lookup = LookupService.CreateLookupValue(lookupFieldName, lookupFieldValue, AuthToken);
+            if (lookup != null)
+            {
+                LookupCache.Add(cacheKey, lookup.Id);
+                return lookup;
             }
 
             return null;

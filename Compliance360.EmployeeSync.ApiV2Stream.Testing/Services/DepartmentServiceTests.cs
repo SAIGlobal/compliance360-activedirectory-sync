@@ -19,7 +19,7 @@ using NUnit.Framework;
 
 namespace Compliance360.EmployeeSync.ApiV2Stream.Testing.Services
 {
-    [TestFixture(Description = "Tests for the Deaprtment Service")]
+    [TestFixture(Description = "Tests for the Department Service")]
     public class DepartmentServiceTest
     {
         [Test(Description = "Tests the ability to create a department")]

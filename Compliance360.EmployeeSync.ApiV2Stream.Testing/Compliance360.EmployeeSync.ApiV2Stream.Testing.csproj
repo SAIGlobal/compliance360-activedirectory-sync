@@ -75,6 +75,7 @@
   <ItemGroup>
     <Compile Include="EntityTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\LookupServiceTests.cs" />
     <Compile Include="Services\RelationshipServiceTests.cs" />
     <Compile Include="Services\GroupServiceTests.cs" />
     <Compile Include="Services\EmployeeServiceTests.cs" />
@@ -117,6 +118,8 @@
     <EmbeddedResource Include="Data\GetEmployeeRelationshipsResponse.json" />
     <EmbeddedResource Include="Data\GetRelationshipDetailsResponse.json" />
     <EmbeddedResource Include="Data\FindDepartmentMissingResponse.json" />
+    <EmbeddedResource Include="Data\CreateLookupResponse.json" />
+    <EmbeddedResource Include="Data\GetLookupResponse.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
