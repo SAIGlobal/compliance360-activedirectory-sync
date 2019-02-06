@@ -1,0 +1,12 @@
+﻿{
+  "status": {
+    "status": 200,
+    "message": "OK"
+  },
+  "data": [
+    {
+      "id": "Lookup/Employee/JobTitleId:1",
+      "Text": "Sr. Systems Engineer"
+    }
+  ]
+}

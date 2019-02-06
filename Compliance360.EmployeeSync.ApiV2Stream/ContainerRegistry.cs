@@ -23,6 +23,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             For<IEmployeeService>().Use<EmployeeService>().AlwaysUnique();
             For<IGroupService>().Use<GroupService>().AlwaysUnique();
             For<IRelationshipService>().Use<RelationshipService>().AlwaysUnique();
+            For<ILookupService>().Use<LookupService>().AlwaysUnique();
             For<IHttpDataService>().Use<HttpDataService>().AlwaysUnique();
             For<IHttpClientHandler>().Use<HttpClientHandler>().AlwaysUnique();
         }

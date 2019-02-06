@@ -78,6 +78,7 @@
     <Compile Include="Data\Employee.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="HttpDataService.cs" />
+    <Compile Include="Services\LookupService.cs" />
     <Compile Include="Services\RelationshipService.cs" />
     <Compile Include="Services\GroupService.cs" />
     <Compile Include="Services\EmployeeService.cs" />

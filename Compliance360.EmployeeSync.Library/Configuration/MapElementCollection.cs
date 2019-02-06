@@ -18,11 +18,12 @@ namespace Compliance360.EmployeeSync.Library.Configuration
             return Guid.NewGuid();
         }
 
-        public MapElement Add(string from, string to)
+        public MapElement Add(string from, string to, string type)
         {
             var elm = (MapElement)CreateNewElement();
             elm.From = from;
             elm.To = to;
+            elm.Type = type;
 
             BaseAdd(elm);
 
