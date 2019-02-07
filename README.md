@@ -90,9 +90,12 @@ A full sample configuration is listed below. Details on how to configure each se
               <map from="{givenName}" to="FirstName"/>
               <map from="{sn}" to="LastName"/>
               <map from="{mail}" to="Email"/>
-              <map from="{title}" to="JobTitleId"/>
+              <map from="{title}" to="JobTitleId" type="lookup"/>
               <map from="{department}" to="Department"/>
               <map from="{memberOf}" to="Groups"/>
+              <map from="{manager}" to="Relationships" type="Manager"/>
+              <map from="My Company" to="Company" type="company"/>
+              <map from="true" to="CanLogin"/>
             </mapping>
           </stream>
         </outputStreams>          
@@ -270,9 +273,12 @@ The Compliance 360Apiv2 Stream handles the REST API calls to the Compliance 360 
     <map from="{givenName}" to="FirstName"/>
     <map from="{sn}" to="LastName"/>
     <map from="{mail}" to="Email"/>
-    <map from="{title}" to="JobTitleId"/>
+    <map from="{title}" to="JobTitleId" type="lookup"/>
     <map from="{department}" to="Department"/>
     <map from="{memberOf}" to="Groups"/>
+    <map from="{manager}" to="Relationships" type="Manager"/>
+    <map from="My Company" to="Company" type="company"/>
+    <map from="true" to="CanLogin"/>
   </mapping>
 </stream>
 ```
@@ -295,9 +301,13 @@ The four (4) settings listed below are required:
     ```
     will result in "from" value being the domain name, a slash "\\", followed by the account like saig\thomasl
 * __to:__ The Compliance 360 employee field name. There are several fields that are required in order for the system to function correctly.
-* REQUIRED "to" FIELDS:
+* Required __"to"__ fields:
   * __PrimaryDivision:__ The Compliance 360 employee base division path in the format ```[DIVISION_NAME] \ [CHILD_DIVISION_NAME]```. Please note that there is a space both before and after the slash.
   * __EmployeeNum:__ The identifier supplied by the client used to uniquely identify the employee in the Compliance 360 application.
+  * __CanLogin:__ This is the value that sets the employee's user status which determines whether the user may login to the system.
+* "type" Attributes: There are several system attribute "Types" that can be used to let the system handle complex field type mapping.
+  * __lookup:__ The "lookup" type tells the system that the destination field, the "to" value, is a Lookup type field. This attribute is needed to create the lookup value if it is not present and/or to lookup an existing lookup value.
+  * __company:__ The "company" type tells the system that the destination field is of type "Company" and enables the creation of new Company entities if they are not already present in the application.
 
 
 

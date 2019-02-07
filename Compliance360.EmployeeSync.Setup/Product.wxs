@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" Name="Compliance 360 LDAP Sync Service" Language="1033" Version="1.0.0.0" Manufacturer="SAI Global"
+  <Product Id="*" Name="Compliance 360 LDAP Sync Service" Language="1033" Version="1.1.0.0" Manufacturer="SAI Global"
            UpgradeCode="e5a9f204-1c8b-4eeb-93ad-b6549a1be680">
     <Package Id="*" InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
     <WixVariable Id="WixUIBannerBmp" Value="images\banner.bmp" />
