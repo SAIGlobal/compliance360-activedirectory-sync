@@ -67,6 +67,7 @@
               <map from="{memberOf}" to="Groups"/>
               <map from="{manager}" to="Relationships" type="Manager"/>
               <map from="My Company" to="Company" type="company"/>
+              <map from ="true" to="CanLogin"/>
             </mapping>
           </stream>
         </outputStreams>

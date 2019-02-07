@@ -54,10 +54,12 @@
               <map from="{givenName}" to="FirstName" />
               <map from="{sn}" to="LastName" />
               <map from="{mail}" to="Email" />
-              <map from="{title}" to="JobTitleId" />
+              <map from="{title}" to="JobTitleId" type="lookup"/>
               <map from="{department}" to="Department" />
               <map from="{memberOf}" to="Groups" />
               <map from="{manager}" to="Relationships" type="Manager" />
+              <map from="My Company" to="Company" type="company"/>
+              <map from ="true" to="CanLogin"/>
             </mapping>
           </stream>
         </outputStreams>

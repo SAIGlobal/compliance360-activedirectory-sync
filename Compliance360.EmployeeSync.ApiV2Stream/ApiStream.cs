@@ -245,7 +245,11 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
                     case SystemFields.Relationships:
                         relationships[map.Type] = GetFieldValueDefault(map.From, user);
                         break;
-                        
+
+                    case SystemFields.CanLogin:
+                        value = GetFieldValueBoolean(map.From, user);
+                        break;
+
                     default:
                         value = GetFieldValue(map.From, map.To, map.Type, user);
                         break;
@@ -340,8 +344,6 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
                 // create the new employee record
                 var workflowTemplate = GetDefaultWorkflowTemplate();
                 employee[SystemFields.WorkflowTemplate] = workflowTemplate;
-                
-                employee[SystemFields.CanLogin] = true;
                 employee[SystemFields.Password] = Guid.NewGuid().ToString();
 
                 var newEmployee = EmployeeService.CreateEmployeeAsync(employee, AuthToken).GetAwaiter().GetResult();
@@ -591,7 +593,17 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             return null;
         }
 
-        
+        public bool GetFieldValueBoolean(string from, ActiveDirectoryUser user)
+        {
+            var value = GetFieldValueDefault(from, user);
+            if (bool.TryParse(value, out bool result))
+            {
+                return result;
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Gets the value from the user object
         /// </summary>
