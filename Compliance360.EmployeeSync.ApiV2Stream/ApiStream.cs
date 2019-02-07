@@ -61,6 +61,9 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         private ICacheService RelationshipTypeCache { get; set; }
         private ICacheService EmployeeDistinguishedNameCache { get; set; }
         private ICacheService LookupCache { get; set; }
+        private ICacheService CompanyCache { get; set; }
+
+
         private IAuthenticationService AuthenticationService { get; }
         private IDepartmentService DepartmentService { get; }
         private IDivisionService DivisionService { get; }
@@ -68,6 +71,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
         private IGroupService GroupService { get; }
         private IRelationshipService RelationshipService { get; }
         private ILookupService LookupService { get; }
+        private ICompanyService CompanyService { get; }
 
         private System.Threading.Timer _timer;
         private readonly Dictionary<Employee, SortedList<string, string>> _employeesWithRelationships = new Dictionary<Employee, SortedList<string, string>>();
@@ -81,7 +85,8 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             IEmployeeService employeeService,
             IGroupService groupService,
             IRelationshipService relationshipService,
-            ILookupService lookupService)
+            ILookupService lookupService,
+            ICompanyService companyService)
         {
             Logger = logger;
             CacheServiceFactory = cacheServiceFactory;
@@ -92,6 +97,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             GroupService = groupService;
             RelationshipService = relationshipService;
             LookupService = lookupService;
+            CompanyService = companyService;
         }
 
         public void Close()
@@ -110,6 +116,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             RelationshipTypeCache?.WriteCacheEntries();
             EmployeeDistinguishedNameCache?.WriteCacheEntries();
             LookupCache?.WriteCacheEntries();
+            CompanyCache?.WriteCacheEntries();
 
             Logger.Debug("Closed the Api Stream");
         }
@@ -155,6 +162,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             GroupService.SetBaseAddress(apiAddress);
             RelationshipService.SetBaseAddress(apiAddress);
             LookupService.SetBaseAddress(apiAddress);
+            CompanyService.SetBaseAddress(apiAddress);
 
             // setup a task to renew the token on a regular interval
             // authenticate with the c360 api
@@ -173,6 +181,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             EmployeeDistinguishedNameCache =
                 CacheServiceFactory.CreateCacheService(Logger, "EmployeeDistinguishedName", true);
             LookupCache = CacheServiceFactory.CreateCacheService(Logger, "Lookup", false);
+            CompanyCache = CacheServiceFactory.CreateCacheService(Logger, "Company", false);
         }
 
         /// <summary>
@@ -570,6 +579,14 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
                     return GetLookupFieldValue(to, lookupValue);
                 }
             }
+            else if (type == FieldTypes.Company)
+            {
+                var companyName = GetFieldValueDefault(from, user);
+                if (!string.IsNullOrEmpty(companyName))
+                {
+                    return GetCompanyValue(companyName);
+                }
+            }
 
             return null;
         }
@@ -629,40 +646,33 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
 
             return fieldValue;
         }
-        
+
         /// <summary>
-        /// Gets a JobTitle value 
+        /// Gets a Company entity.
         /// </summary>
-        /// <param name="from">The from value to parse.</param>
-        /// <param name="user">The user object that contains the data.</param>
-        /// <returns></returns>
-        public Entity GetJobTitleValue(string from, ActiveDirectoryUser user)
+        /// <param name="companyName">The name of the Company.</param>
+        /// <returns>Company Entity</returns>
+        public Entity GetCompanyValue(string companyName)
         {
-            // get the field value for the job title name
-            var jobTitleValue = GetFieldValueDefault(from, user);
-            if (string.IsNullOrEmpty(jobTitleValue))
-            {
-                return null;
-            }
-
             // check the cache 
-            if (JobTitleCache.ContainsKey(jobTitleValue))
-                return new Entity { Id = JobTitleCache.GetValue(jobTitleValue) };
+            var cacheKey = companyName;
+            if (CompanyCache.ContainsKey(cacheKey))
+                return new Entity { Id = CompanyCache.GetValue(cacheKey) };
 
-            // job title does not exist in the cache...get it from the service
-            var jobTitle = EmployeeService.GetJobTitle(jobTitleValue,AuthToken);
-            if (jobTitle != null)
+            // company does not exist in the cache...try to get it
+            var company = CompanyService.GetCompany(companyName, AuthToken);
+            if (company != null)
             {
-                JobTitleCache.Add(jobTitleValue, jobTitle.Id);
-                return jobTitle;
+                CompanyCache.Add(cacheKey, company.Id);
+                return company;
             }
 
-            // did not find the job title in the system so add it.
-            jobTitle = EmployeeService.CreateJobTitle(jobTitleValue, AuthToken);
-            if (jobTitle != null)
+            // did not find the company in the system so add it.
+            company = CompanyService.CreateCompany(companyName, AuthToken);
+            if (company != null)
             {
-                JobTitleCache.Add(jobTitleValue, jobTitle.Id);
-                return jobTitle;
+                CompanyCache.Add(cacheKey, company.Id);
+                return company;
             }
 
             return null;

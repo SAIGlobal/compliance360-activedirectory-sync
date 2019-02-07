@@ -66,6 +66,7 @@
               <map from="{department}" to="Department"/>
               <map from="{memberOf}" to="Groups"/>
               <map from="{manager}" to="Relationships" type="Manager"/>
+              <map from="My Company" to="Company" type="company"/>
             </mapping>
           </stream>
         </outputStreams>
