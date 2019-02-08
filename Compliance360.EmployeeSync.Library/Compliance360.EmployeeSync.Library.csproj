@@ -103,6 +103,8 @@
     <Compile Include="ISyncService.cs" />
     <Compile Include="Jobs\ActiveDirectorySyncJob.cs" />
     <Compile Include="Jobs\ISyncJob.cs" />
+    <Compile Include="Notifications\EmailNotificationService.cs" />
+    <Compile Include="OutputStreams\ErrorGeneratorStream.cs" />
     <Compile Include="OutputStreams\IOutputStream.cs" />
     <Compile Include="OutputStreams\IOutputStreamFactory.cs" />
     <Compile Include="OutputStreams\LoggerStream.cs" />

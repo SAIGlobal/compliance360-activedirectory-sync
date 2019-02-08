@@ -19,7 +19,7 @@ namespace Compliance360.EmployeeSync.Library
         public const string PluginNameDomainAttributeFilter = "DomainAttributeFilter";
         public const string PluginNameSftpStream = "Sftp";
         public const string PluginNameLoggerStream = "Logger";
-        //public const string PluginNameC360ApiV2Stream = "Compliance360ApiV2";
+        public const string PluginNameErrorGeneratorStream = "ErrorGenerator";
 
         public ContainerRegistry()
         {
@@ -47,6 +47,7 @@ namespace Compliance360.EmployeeSync.Library
 
             // named streams
             For<IOutputStream>().Use<LoggerStream>().Named(PluginNameLoggerStream);
+            For<IOutputStream>().Use<ErrorGeneratorStream>().Named(PluginNameErrorGeneratorStream);
         }
     }
 }

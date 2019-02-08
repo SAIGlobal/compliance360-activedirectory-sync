@@ -16,7 +16,17 @@
            password=""
            ldapQuery="(&amp;(objectClass=user)(objectCategory=person)(!msExchResourceMetaData=ResourceType:Room))"
            removeGroupPrefix="" 
-           intervalSeconds="10">
+           intervalSeconds="10"
+           errorThreshold="10"
+           errorNotificationHost=""
+           errorNotificationPort="587"
+           errorNotificationUseSsl="true"
+           errorNotificationUserName=""
+           errorNotificationPassword=""
+           errorNotificationDomain=""
+           errorNotificationEmailFrom=""
+           errorNotificationEmailTo=""
+           errorNotificationSubject="LDAP Sync error threshold exceeded">
         <attributes>
           <attribute name="domain" includeInQuery="false" filter="DomainAttributeFilter" />
           <attribute name="sAMAccountName" />

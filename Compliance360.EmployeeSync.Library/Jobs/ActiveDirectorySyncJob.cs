@@ -7,6 +7,7 @@ using Compliance360.EmployeeSync.Library.OutputStreams;
 using Newtonsoft.Json;
 using NLog;
 using System.Collections.Generic;
+using Compliance360.EmployeeSync.Library.Notifications;
 
 namespace Compliance360.EmployeeSync.Library.Jobs
 {
@@ -56,6 +57,12 @@ namespace Compliance360.EmployeeSync.Library.Jobs
             try
             {
                 var users = ActiveDirectoryService.GetActiveDirectoryUsers(JobConfig);
+
+                // track errors and stop processing send a notification if the threshold is crossed
+                var errorThreshold = JobConfig.ErrorThreshold;
+                var errorCount = 0;
+                var stopProcessing = false;
+
                 foreach (var user in users)
                 {
                     // write the user to each stream in the list
@@ -67,11 +74,25 @@ namespace Compliance360.EmployeeSync.Library.Jobs
                         }
                         catch (Exception ex)
                         {
-                            // catch exceptions at the user level
-                            // and log them, then keep going since we do not
-                            // want to stop processing other users
                             Logger.Error(ex);
+
+                            errorCount++;
+
+                            if (errorThreshold > 0 && errorCount > errorThreshold)
+                            {
+                                var emailSvc = new EmailNotificationService();
+                                emailSvc.SendEmailNotification(JobConfig, $"{errorCount} error have occured.");
+
+                                stopProcessing = true;
+
+                                break;
+                            }
                         }
+                    }
+
+                    if (stopProcessing)
+                    {
+                        break;
                     }
                 }
             }
