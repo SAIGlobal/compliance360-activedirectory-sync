@@ -28,6 +28,16 @@ namespace Compliance360.EmployeeSync.Testing
                 job.Password = "Password";
                 job.RemoveGroupPrefix = "RemoveGroupPrefix";
                 job.Type = "Type";
+                job.ErrorThreshold = 10;
+                job.ErrorNotificationHost = "host";
+                job.ErrorNotificationPort = 587;
+                job.ErrorNotificationUseSsl = true;
+                job.ErrorNotificationUserName = "username";
+                job.ErrorNotificationPassword = "password";
+                job.ErrorNotificationDomain = "domain";
+                job.ErrorNotificationEmailFrom = "email_from";
+                job.ErrorNotificationEmailTo = "email_to";
+                job.ErrorNotificationSubject = "subject";
 
                 Assert.AreEqual(job.Domain, "Domain");
                 Assert.AreEqual(job.IntervalSeconds, 10);
@@ -38,6 +48,16 @@ namespace Compliance360.EmployeeSync.Testing
                 Assert.AreEqual(job.RemoveGroupPrefix, "RemoveGroupPrefix");
                 Assert.AreEqual(job.Type, "Type");
                 Assert.Greater(job.Groups.Count, 0);
+                Assert.AreEqual(job.ErrorThreshold, 10);
+                Assert.AreEqual(job.ErrorNotificationHost, "host");
+                Assert.AreEqual(job.ErrorNotificationPort, 587);
+                Assert.AreEqual(job.ErrorNotificationUseSsl, true);
+                Assert.AreEqual(job.ErrorNotificationUserName, "username");
+                Assert.AreEqual(job.ErrorNotificationPassword, "password");
+                Assert.AreEqual(job.ErrorNotificationDomain, "domain");
+                Assert.AreEqual(job.ErrorNotificationEmailFrom, "email_from");
+                Assert.AreEqual(job.ErrorNotificationEmailTo, "email_to");
+                Assert.AreEqual(job.ErrorNotificationSubject, "subject");
 
                 foreach (GroupElement grp in job.Groups)
                     Assert.True(!string.IsNullOrEmpty(grp.Name));

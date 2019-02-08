@@ -43,6 +43,76 @@ namespace Compliance360.EmployeeSync.Library.Configuration
             set { this["intervalSeconds"] = value; }
         }
 
+        [ConfigurationProperty("errorThreshold")]
+        public int ErrorThreshold
+        {
+            get
+            {
+                var val = this["errorThreshold"];
+                return (int)val;
+            }
+            set { this["errorThreshold"] = value; }
+        }
+
+        [ConfigurationProperty("errorNotificationHost")]
+        public string ErrorNotificationHost
+        {
+            get { return this["errorNotificationHost"] as string; }
+            set { this["errorNotificationHost"] = value; }
+        }
+
+        [ConfigurationProperty("errorNotificationPort")]
+        public int ErrorNotificationPort
+        {
+            get
+            {
+                var val = this["errorNotificationPort"];
+                return (int)val;
+            }
+            set { this["errorNotificationPort"] = value; }
+        }
+
+        [ConfigurationProperty("errorNotificationUserName")]
+        public string ErrorNotificationUserName
+        {
+            get { return this["errorNotificationUserName"] as string; }
+            set { this["errorNotificationUserName"] = value; }
+        }
+
+        [ConfigurationProperty("errorNotificationPassword")]
+        public string ErrorNotificationPassword
+        {
+            get { return this["errorNotificationPassword"] as string; }
+            set { this["errorNotificationPassword"] = value; }
+        }
+
+        [ConfigurationProperty("errorNotificationDomain")]
+        public string ErrorNotificationDomain
+        {
+            get { return this["errorNotificationDomain"] as string; }
+            set { this["errorNotificationDomain"] = value; }
+        }
+
+        [ConfigurationProperty("errorNotificationEmailFrom")]
+        public string ErrorNotificationEmailFrom
+        {
+            get { return this["errorNotificationEmailFrom"] as string; }
+            set { this["errorNotificationEmailFrom"] = value; }
+        }
+
+        [ConfigurationProperty("errorNotificationEmailTo")]
+        public string ErrorNotificationEmailTo
+        {
+            get { return this["errorNotificationEmailTo"] as string; }
+            set { this["errorNotificationEmailTo"] = value; }
+        }
+
+        [ConfigurationProperty("errorNotificationSubject")]
+        public string ErrorNotificationSubject
+        {
+            get { return this["errorNotificationSubject"] as string; }
+            set { this["errorNotificationSubject"] = value; }
+        }
 
         [ConfigurationProperty("removeGroupPrefix")]
         public string RemoveGroupPrefix
@@ -51,7 +121,13 @@ namespace Compliance360.EmployeeSync.Library.Configuration
             set { this["removeGroupPrefix"] = value; }
         }
 
-        
+        [ConfigurationProperty("errorNotificationUseSsl")]
+        public bool ErrorNotificationUseSsl
+        {
+            get { return (bool)this["errorNotificationUseSsl"]; }
+            set { this["errorNotificationUseSsl"] = value; }
+        }
+
         [ConfigurationProperty("allowedGroups")]
         public GroupElementCollection Groups
         {
