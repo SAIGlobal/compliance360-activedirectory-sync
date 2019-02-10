@@ -104,6 +104,7 @@
     <Compile Include="Jobs\ActiveDirectorySyncJob.cs" />
     <Compile Include="Jobs\ISyncJob.cs" />
     <Compile Include="Notifications\EmailNotificationService.cs" />
+    <Compile Include="Notifications\IEmailNotificationService.cs" />
     <Compile Include="OutputStreams\ErrorGeneratorStream.cs" />
     <Compile Include="OutputStreams\IOutputStream.cs" />
     <Compile Include="OutputStreams\IOutputStreamFactory.cs" />

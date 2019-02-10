@@ -17,18 +17,20 @@ namespace Compliance360.EmployeeSync.Library.Jobs
     /// </summary>
     public class ActiveDirectorySyncJob : SyncJob
     {
+        private IActiveDirectoryService ActiveDirectoryService { get; }
+        private IOutputStreamFactory OutputStreamFactory { get; }
+        private IEmailNotificationService EmailNotificationService { get; }
+
         public ActiveDirectorySyncJob(ILogger logger,
             JobElement jobConfig,
             IActiveDirectoryService activeDirectoryService,
-            IOutputStreamFactory outputStreamFactory) : base(logger, jobConfig)
+            IOutputStreamFactory outputStreamFactory,
+            IEmailNotificationService emailNotificationService) : base(logger, jobConfig)
         {
             ActiveDirectoryService = activeDirectoryService;
             OutputStreamFactory = outputStreamFactory;
+            EmailNotificationService = emailNotificationService;
         }
-        
-        private IActiveDirectoryService ActiveDirectoryService { get; }
-        
-        private IOutputStreamFactory OutputStreamFactory { get; }
     
         /// <summary>
         /// Performs the active directory synchronization activities
@@ -80,8 +82,7 @@ namespace Compliance360.EmployeeSync.Library.Jobs
 
                             if (errorThreshold > 0 && errorCount > errorThreshold)
                             {
-                                var emailSvc = new EmailNotificationService();
-                                emailSvc.SendEmailNotification(JobConfig, $"{errorCount} error have occured.");
+                                EmailNotificationService.SendEmailNotification(JobConfig, $"{errorCount} error have occured.");
 
                                 stopProcessing = true;
 

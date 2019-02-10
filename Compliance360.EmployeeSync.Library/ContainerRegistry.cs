@@ -2,6 +2,7 @@
 using Compliance360.EmployeeSync.Library.Data;
 using Compliance360.EmployeeSync.Library.Jobs;
 using Compliance360.EmployeeSync.Library.Filters;
+using Compliance360.EmployeeSync.Library.Notifications;
 using Compliance360.EmployeeSync.Library.OutputStreams;
 using NLog;
 using StructureMap;
@@ -31,7 +32,8 @@ namespace Compliance360.EmployeeSync.Library
             For<IAttributeFilterFactory>().Use<AttributeFilterFactory>();
             For<IUserFilterFactory>().Use<UserFilterFactory>();
             For<IOutputStreamFactory>().Use<OutputStreamFactory>();
-            
+            For<IEmailNotificationService>().Use<EmailNotificationService>();
+
             // named jobs
             For<ISyncJob>().Use<ActiveDirectorySyncJob>().Named(PluginNameActiveDirectory).AlwaysUnique();
 

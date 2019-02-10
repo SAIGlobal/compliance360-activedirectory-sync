@@ -54,7 +54,17 @@ A full sample configuration is listed below. Details on how to configure each se
         password=""
         ldapQuery="(&amp;(objectClass=user)(objectCategory=person)(!msExchResourceMetaData=ResourceType:Room))"
         removeGroupPrefix=""
-        intervalSeconds="3600">
+        intervalSeconds="3600"
+        errorThreshold="10"
+        errorNotificationHost=""
+        errorNotificationPort="587"
+        errorNotificationUseSsl="true"
+        errorNotificationUserName=""
+        errorNotificationPassword=""
+        errorNotificationDomain=""
+        errorNotificationEmailFrom=""
+        errorNotificationEmailTo=""
+        errorNotificationSubject="LDAP Sync error threshold exceeded">
         <attributes>
           <attribute name="domain" includeInQuery="false" filter="DomainAttributeFilter" />
           <attribute name="sAMAccountName" />
@@ -127,7 +137,17 @@ to handle multiple sources of users including those in multiple OUs or multiple 
   password=""
   ldapQuery="(&amp;(objectClass=user)(objectCategory=person)(!msExchResourceMetaData=ResourceType:Room))"
   removeGroupPrefix=""
-  intervalSeconds="3600">
+  intervalSeconds="3600"
+  errorThreshold="10"
+  errorNotificationHost=""
+  errorNotificationPort="587"
+  errorNotificationUseSsl="true"
+  errorNotificationUserName=""
+  errorNotificationPassword=""
+  errorNotificationDomain=""
+  errorNotificationEmailFrom=""
+  errorNotificationEmailTo=""
+  errorNotificationSubject="LDAP Sync error threshold exceeded">
 ```
 * __name__
   * The name of the job.
@@ -147,7 +167,27 @@ to handle multiple sources of users including those in multiple OUs or multiple 
   * A prefix value that will be removed from each group name. If within Active Directory you create a series of Compliance 360 related groups with a common prefix like "Compliance360-Administrators." When the group is added to Compliance 360, you can use the removeGroupPrefix value to create the group "Administrators."
 * __intervalSeconds__
   * The number of seconds the system waits between job executions. The default value is one (1) hour.
-
+* __errorThreshold__
+  * The number of errors that may occur before stopping the sync process. If this value is exceeded, the 
+  system will also optionally send a notification email.
+* __errorNotificationHost__
+  * The SMTP host address: Ex smtp.google.com
+* __errorNotificationPort__
+  * The SMTP port number: Ex: 25
+* __errorNotificationUseSsl__
+  * "true" if the smtp client should use SSL when communicating with the server.
+* __errorNotificationUserName__
+  * The SMTP user name
+* __errorNotificationPassword__
+  * The SMTP user password
+* __errorNotificationDomain__
+  * The SMTP windows domain (optional)
+* __errorNotificationEmailFrom__
+  * The "From" email address
+* __errorNotificationEmailTo__
+  * The "To" email address
+* __errorNotificationSubject__
+  * The subject of the email, Ex: "LDAP Sync error threshold for [CLIENT_NAME] was exceeded"
 
 ### &lt;attrbiute&gt; Element
 Attribute elements are used to configure the attributes that are fetched from Active Directory which will then be mapped to the Compliance 360
