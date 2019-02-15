@@ -34,7 +34,7 @@ namespace Compliance360.EmployeeSync.Library.Notifications
                 client.DeliveryMethod = SmtpDeliveryMethod.Network;
                 client.UseDefaultCredentials = false;
                 client.Host = jobConfig.ErrorNotificationHost;
-                client.EnableSsl = true;
+                client.EnableSsl = jobConfig.ErrorNotificationUseSsl;
 
                 if (!string.IsNullOrEmpty(jobConfig.ErrorNotificationUserName))
                 {
