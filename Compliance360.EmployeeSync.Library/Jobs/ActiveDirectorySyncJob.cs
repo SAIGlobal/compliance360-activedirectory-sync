@@ -82,7 +82,7 @@ namespace Compliance360.EmployeeSync.Library.Jobs
 
                             if (errorThreshold > 0 && errorCount > errorThreshold)
                             {
-                                EmailNotificationService.SendEmailNotification(JobConfig, $"{errorCount} error have occured.");
+                                EmailNotificationService.SendEmailNotification(JobConfig, $"{errorCount} error(s) have occured.");
 
                                 stopProcessing = true;
 
