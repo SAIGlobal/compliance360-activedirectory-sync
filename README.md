@@ -358,6 +358,8 @@ The four (4) settings listed below are required:
   * Department
   * User Group
   * Employee
+  * Lookup values
+  * Company
 * Application logging / tracing is done using [NLog](http://nlog-project.org/). By default, the application comes preconfigured to log all errors to the "Application" event log. To troubleshoot the service, please enable the file logging at the debug level as seen below by uncommenting the "file" logger rule entry in the NLog.config file
 ``` xml
 <?xml version="1.0" encoding="utf-8"?>
