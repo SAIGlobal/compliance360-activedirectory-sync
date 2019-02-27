@@ -31,8 +31,9 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Services
         /// <param name="organization">The organization name.</param>
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
+        /// <param name="culture">The user's culture code. ex: en-US</param>
         /// <returns>Authentication token</returns>
-        Task<string> LoginAsync(string baseAddress, string organization, string username, string password);
+        Task<string> LoginAsync(string baseAddress, string organization, string username, string password, string culture);
 
         /// <summary>
         /// Logs into the C360 API. Returns the API auth token.
@@ -41,8 +42,9 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Services
         /// <param name="organization">The organization name.</param>
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
+        /// <param name="culture">The user's culture code. ex: en-US</param>
         /// <returns>Authentication token</returns>
-        string Login(string baseAddress, string organization, string username, string password);
+        string Login(string baseAddress, string organization, string username, string password, string culture);
 
         /// <summary>
         /// Logs the user out of the C360 application terminating the session.

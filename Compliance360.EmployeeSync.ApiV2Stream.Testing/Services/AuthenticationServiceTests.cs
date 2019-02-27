@@ -56,7 +56,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Testing.Services
             var httpDataService = new HttpDataService(logger.Object, httpClient.Object);
 
             var authService = new AuthenticationService(logger.Object, httpDataService);
-            var token = authService.Login("https://secure.compliance360.com", "TEST_ORG", "TEST_USER", "TEST_PASSWORD");
+            var token = authService.Login("https://secure.compliance360.com", "TEST_ORG", "TEST_USER", "TEST_PASSWORD", "TEST_CULTURE");
 
             Assert.AreEqual("123i4JESNOqOnRND5L5lqJbWO1xV9jc3%2DDng09BacirEAwMCgvupQHWp%2BDnCh", token);
         }

@@ -46,7 +46,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Services
             return GetHostAddressAsync(baseAddress, organization).Result;
         }
         
-        public async Task<string> LoginAsync(string baseAddress, string organization, string username, string password)
+        public async Task<string> LoginAsync(string baseAddress, string organization, string username, string password, string culture)
         {
             Logger.Debug("Logging in to API Organization:{0} Username:{1}", organization, username);
 
@@ -57,7 +57,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Services
                 organization,
                 username,
                 password,
-                culture = "en-US"
+                culture
             };
 
             const string loginUri = "/API/2.0/Security/Login";
@@ -67,9 +67,9 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Services
             return resp.Token;
         }
 
-        public string Login(string baseAddress, string organization, string username, string password)
+        public string Login(string baseAddress, string organization, string username, string password, string culture)
         {
-            return LoginAsync(baseAddress, organization, username, password).Result;
+            return LoginAsync(baseAddress, organization, username, password, culture).Result;
         }
 
 
