@@ -39,6 +39,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             public string Organization;
             public string Username;
             public string Password;
+            public string Culture;
         }
 
         private readonly ConcurrentDictionary<string, string> _tokenDict = new ConcurrentDictionary<string, string>();
@@ -140,7 +141,8 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
                 BaseAddress = StreamConfig.Settings["baseAddress"],
                 Organization = StreamConfig.Settings["organization"],
                 Username = StreamConfig.Settings["username"],
-                Password = StreamConfig.Settings["password"]
+                Password = StreamConfig.Settings["password"],
+                Culture = StreamConfig.Settings["culture"]
             };
             
             // get the base address
@@ -280,16 +282,18 @@ namespace Compliance360.EmployeeSync.ApiV2Stream
             {
                 var loginSettings = (LoginSettings)state;
 
-                Logger.Debug("Logging in to API with BaseAddress:{0} Organization:{1} Username:{2} Password:{3}",
+                Logger.Debug("Logging in to API with BaseAddress:{0} Organization:{1} Username:{2} Password:{3} Culture:{4}",
                     loginSettings.BaseAddress,
                     loginSettings.Organization,
                     loginSettings.Username,
-                    loginSettings.Password);
+                    loginSettings.Password,
+                    loginSettings.Culture);
 
                 AuthToken = AuthenticationService.Login(loginSettings.BaseAddress,
                     loginSettings.Organization,
                     loginSettings.Username,
-                    loginSettings.Password);
+                    loginSettings.Password,
+                    loginSettings.Culture);
             }
             catch (Exception ex)
             {
