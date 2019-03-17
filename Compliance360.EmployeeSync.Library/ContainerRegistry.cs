@@ -18,7 +18,9 @@ namespace Compliance360.EmployeeSync.Library
         public const string PluginNameUserCacheFilter = "UserCacheFilter";
         public const string PluginNameUacAttributeFilter = "UacAttributeFilter";
         public const string PluginNameDomainAttributeFilter = "DomainAttributeFilter";
-        public const string PluginNameSftpStream = "Sftp";
+        public const string PluginNameGuidToStringAttributeFilter = "GuidToString";
+        public const string PluginNameSidToStringAttributeFilter = "SidToString";
+        
         public const string PluginNameLoggerStream = "Logger";
         public const string PluginNameErrorGeneratorStream = "ErrorGenerator";
 
@@ -42,6 +44,8 @@ namespace Compliance360.EmployeeSync.Library
             For<IAttributeFilter>().Use<GroupsAttributeFilter>().Named(PluginNameGroupsAttributeFilter);
             For<IAttributeFilter>().Use<UacAttributeFilter>().Named(PluginNameUacAttributeFilter);
             For<IAttributeFilter>().Use<DomainAttributeFilter>().Named(PluginNameDomainAttributeFilter);
+            For<IAttributeFilter>().Use<GuidToStringAttributeFilter>().Named(PluginNameGuidToStringAttributeFilter);
+            For<IAttributeFilter>().Use<SidToStringAttributeFilter>().Named(PluginNameSidToStringAttributeFilter);
 
             // named user filters
             For<IUserFilter>().Use<UserGroupFilter>().Named(PluginNameUserGroupFilter);
