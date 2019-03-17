@@ -89,6 +89,7 @@
     <Compile Include="Filters\DomainAttributeFilter.cs" />
     <Compile Include="Filters\GroupsAttributeFilter.cs" />
     <Compile Include="Data\IActiveDirectoryService.cs" />
+    <Compile Include="Filters\GuidToStringAttributeFilter.cs" />
     <Compile Include="Filters\IAttributeFilter.cs" />
     <Compile Include="Filters\IAttributeFilterFactory.cs" />
     <Compile Include="Data\ICacheService.cs" />
@@ -96,6 +97,7 @@
     <Compile Include="Filters\IUserFilter.cs" />
     <Compile Include="Filters\IUserFilterFactory.cs" />
     <Compile Include="Filters\ReadLdapFilter.cs" />
+    <Compile Include="Filters\SidToStringAttributeFilter.cs" />
     <Compile Include="Filters\UacAttributeFilter.cs" />
     <Compile Include="Filters\UserCacheFilter.cs" />
     <Compile Include="Data\UserFilterFactory.cs" />
