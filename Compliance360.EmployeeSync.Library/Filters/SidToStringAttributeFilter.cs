@@ -18,7 +18,7 @@ namespace Compliance360.EmployeeSync.Library.Filters
                 var sid = new SecurityIdentifier((byte[]) currentValue, 0);
                 return sid.ToString();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return string.Empty;
             }

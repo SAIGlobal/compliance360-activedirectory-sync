@@ -33,6 +33,7 @@ namespace Compliance360.EmployeeSync.Testing
             var testUser = new ActiveDirectoryUser();
             testUser.Attributes[ActiveDirectoryService.AttributeWhenChanged] = DateTime.Now;
             testUser.Attributes[ActiveDirectoryService.AttributeDistinguishedName] = "cn=Thomas";
+            testUser.Attributes[ActiveDirectoryService.AttributeDepartment] = "sales";
 
             var job = new JobElement
             {
@@ -52,6 +53,13 @@ namespace Compliance360.EmployeeSync.Testing
 
             cachedCheckedUser = cacheFilter.Execute(testUser, job);
             Assert.IsNull(cachedCheckedUser);
+
+            // update a value on the user...should get the user 
+            // since the hash should not match
+            testUser.Attributes[ActiveDirectoryService.AttributeDepartment] = "development";
+            cacheFilter = new UserCacheFilter(logger, cacheSvcFactory);
+            cachedCheckedUser = cacheFilter.Execute(testUser, job);
+            Assert.IsNotNull(cachedCheckedUser);
         }
     }
 }
