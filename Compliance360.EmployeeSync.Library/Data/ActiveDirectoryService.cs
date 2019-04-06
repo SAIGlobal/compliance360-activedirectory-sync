@@ -12,8 +12,9 @@ namespace Compliance360.EmployeeSync.Library.Data
 {
     public class ActiveDirectoryService : IActiveDirectoryService
     {
-        public const string AttributeWhenChanged = "whenChanged";
-        public const string AttributeDistinguishedName = "distinguishedName";
+        public static readonly string AttributeWhenChanged = "whenChanged";
+        public static readonly string AttributeDistinguishedName = "distinguishedName";
+        public static readonly string AttributeDepartment = "department";
 
         public ILogger Logger { get; }
         private IUserFilterFactory UserFilterFactory { get; }
