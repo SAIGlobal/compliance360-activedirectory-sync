@@ -1,35 +1,41 @@
 # Compliance 360 LDAP (Active Directory) Sync
+The Compliance 360 Lightweight Directory Access Protocol Sync (LDAP Sync) application is a Microsoft Windows Service that synchronizes your local Active Directory (AD) with the Compliance 360 application. The service is very configurable. This document provides instructions for configuring and supporting LDAP Sync.
 ## Overview
-The Compliance 360 LDAP Sync application is a Microsoft Windows Service that synchronizes your local AD with
-the Compliance 360 application. The service is very configurable. This document provides instructions for
-configuring and supporting the LDAP sync service. 
+The Lightweight Directory Access Protocol (LDAP) is an open, vendor-neutral, industry standard application protocol for accessing and maintaining distributed directory information services over an Internet Protocol (IP) network. 
+
+The Compliance 360 LDAP Sync application application creates the following new objects based on mapping supplied in the configuration if they are not present in the Compliance 360 application:
+   Employee with the following information:
+      * primary division (LDAP Sync will NOT create any missing divisions in the Compliance 360 application. Please create the division structure before starting the sync process.)
+      * number
+      * user name
+      first and last name
+      email
+      job title
+      department
+      groups assigned to
+      company
+      relationships (the related employee must already exist, and the type of relationship is created if it is not available)
+      * user status (which determines if the employee can log in or not)
+   Note: Information preceded by an * is required to be included in the configuration mapping.
+   Job Title (new values created in the Global division)
+   Department (new values created in the employee's division)
+   User Group (new values created in the Global division)
+   Company (new values created in the Global division)
+
+Error Processing and Notifications
+LDAP Sync also has configurable parameters for error processing and email notifications to the SAI Global Operations team member specified. The system will stop processing after the error threshold value is exceeded. This will stop processing for the current sync job, which will then execute again after the specified wait period. In addition to stopping the current processing, the system will attempt to send an email notification message using the configuration settings
 
 ## Installation
-The Compliance 360 LDAP Sync service can be installed by obtaining the [*.msi] installer from [here](https://secure.compliance360.com)
+Compliance 360 LDAP Sync can be installed after obtaining the installation files and following the following steps. If you are interested in configuring this service, contact your account manager or GRC Professional Services representative.
 
-Step 1 - Click "Next"
-
-![](https://s3.amazonaws.com/public.galvanic.io/saiglobal/setup_001.png)
-
+Step 1 - Click "Next" on the first page of the Compliance 360 LDAP Sync Service Setup page.
 Step 2 - Accept the license agreement.
-
-![](https://s3.amazonaws.com/public.galvanic.io/saiglobal/setup_002.png)
-
-Step 3 - Choose "Typical"
-
-![](https://s3.amazonaws.com/public.galvanic.io/saiglobal/setup_003.png)
-
-Step 4 - Choose "Install." When prompted for elevated access rights, choose Yes as the install will need administrative privileges to install the Windows service.
-
-![](https://s3.amazonaws.com/public.galvanic.io/saiglobal/setup_004.png)
-
+Step 3 - Choose "Typical".
+Step 4 - Choose "Install." When prompted for elevated access rights, choose Yes as the installation will need administrative privileges to install the Windows service.
 Step 5 - Choose "Finish"
 
-![](https://s3.amazonaws.com/public.galvanic.io/saiglobal/setup_005.png)
-
-
 ## Configuration
-You may configure the Sync service by modifying the Compliance360.EmployeeSyncService.exe.config file that is located in the install directory. The default location is ```C:\Program Files (x86)\SAI Global\Compliance360 LDAP Sync\```. 
+You may configure LDAP Sync by modifying the Compliance360.EmployeeSyncService.exe.config file that is located in the install directory. The default location is ```C:\Program Files (x86)\SAI Global\Compliance360 LDAP Sync\```. 
 
 A full sample configuration is listed below. Details on how to configure each section and the purpose of each setting are listed below the sample.
 ```xml
@@ -84,7 +90,7 @@ A full sample configuration is listed below. Details on how to configure each se
           <group name="Compliance360-Users" />
         </allowedGroups>
         <outputStreams>
-          <stream name="Logger" />
+          <stream name="Csv" />
           <stream name="Compliance360ApiV2">
             <settings>
               <setting name="baseAddress" value="https://secure.compliance360.com" />
@@ -115,17 +121,16 @@ A full sample configuration is listed below. Details on how to configure each se
 </configuration>
 ```
 
-### &lt;Jobs&gt; Element
-The Jobs element contains one or more &lt;Job&gt; elements. Each job defined will run independently and concurrently.
+### <Jobs> Element
+The Jobs element contains one or more <Job> elements. Each job defined will run independently and concurrently.
 ``` xml
 <jobs>
   <job .../>
 </jobs>
 ```
 
-### &lt;Job&gt; Element
-Synchronization activities are defined as Jobs. You can configure one or more jobs within the service allowing a single instance of the service
-to handle multiple sources of users including those in multiple OUs or multiple Domains.
+### <job> Element
+Synchronization activities are defined as jobs. You can configure one or more jobs within LDAP Sync allowing a single instance of the service to handle multiple sources of users including those in multiple OUs or multiple Domains.
 
 ``` xml
 <job
@@ -152,7 +157,7 @@ to handle multiple sources of users including those in multiple OUs or multiple 
 * __name__
   * The name of the job.
 * __type__
-  * The type of job to process. There is only one supported job "type" in this version of the service. This value must be set to "ActiveDirectory" for the service to work correctly.
+  * The type of job to process. There is only one supported job type in this version of the service. This value must be set to "ActiveDirectory" for the service to work correctly.
 * __domain__
   * The domain that contains the users you wish to synchronize with the Compliance 360 application specified in a dot-separated format like "mycompany.mydomain.com".
 * __ou (optional)__
@@ -187,11 +192,10 @@ to handle multiple sources of users including those in multiple OUs or multiple 
 * __errorNotificationEmailTo__
   * The "To" email address
 * __errorNotificationSubject__
-  * The subject of the email, Ex: "LDAP Sync error threshold for [CLIENT_NAME] was exceeded"
+  * The subject of the email, Ex: "LDAP Sync error threshold for [ORG_NAME] was exceeded"
 
-### &lt;attrbiute&gt; Element
-Attribute elements are used to configure the attributes that are fetched from Active Directory which will then be mapped to the Compliance 360
-employee property values.
+### <attrbiute> Element
+Attribute elements are used to configure the attributes that are fetched from Active Directory which will then be mapped to the Compliance 360 employee property values.
 ``` xml
   <attribute 
     name="userAccountControl" 
@@ -204,8 +208,7 @@ employee property values.
 * __filter (optional)__
   * Filters provide special post-processing behavior. The list of available filters and their behavior are listed below.
 * __includeInQuery (optional)__
-  * True, if the attribute should be included in the query. The value is helpful when deriving a new value from other values returned from 
-  AD. Example: You can return the user's domain value by defining a new attribute called "Domain." Then use the DomainAttributeFilter to return the domain value.
+  * True, if the attribute should be included in the query. The value is helpful when deriving a new value from other values returned from AD. Example: You can return the user's domain value by defining a new attribute called "Domain." Then use the DomainAttributeFilter to return the domain value.
 * __alias (optional)__
   * Optional alternate name to be used to rename an attribute in the returned result set.
 
@@ -240,48 +243,24 @@ employee property values.
   ```
   
 
-### &lt;allowedGroups&gt; Element
+### <allowedGroups> Element
 The ```<allowedGroups>``` element is used to filter the group membership and users that will be sent to the Compliance 360 application.
 If groups are specified, then Active Directory users must be a member of one of the specified groups or they will be filtered out of the result set. This list will also filter the group membership list. 
 
-Example: User Thomas Lee is a member of the "Compliance 360 Users" and "Hospital Employees" groups. Mike Gilbert is a member of just the "Hospital Employees" group. If the allowedGroups section looks like the following:
+Example: User Marco Lombard is a member of the "Compliance 360 Users" and "Hospital Employees" groups. Gabriele Hoffman is a member of just the "Hospital Employees" group. If the allowedGroups section looks like the following:
 ``` xml
 <allowedGroups>
   <group name="Compliance 360 Users" />
 </allowedGroups>
 ```
-Then, only Thomas Lee will be a Compliance 360 user. Also, Thomas Lee will only be a member of the "Compliance 360 Users" group in Compliance 360, "Hospital Employees" will be ignored since it is not on the ```<allowedGroups>``` list.
+Then, only Marco Lombard will be a Compliance 360 user. Also, Marco Lombard will only be a member of the "Compliance 360 Users" group in Compliance 360, "Hospital Employees" will be ignored since it is not on the ```<allowedGroups>``` list.
 
 
 ### Output Streams
-Output streams are used to send the user content retrieved from Active Directory to a specific destination. There are currently two (2) supported streams in the current version of the service. 
-
-``` xml
-<outputStreams>
-  <stream name="Logger" />
-  <stream name="Compliance360ApiV2">
-    <settings>
-      <setting name="baseAddress" value="https://secure.compliance360.com" />
-      ...
-    </settings>
-    <mapping>
-      <map from="Main Division" to="PrimaryDivision"/>
-      ...
-    </mapping>
-  </stream>
-</outputStreams>
-```
-
-#### Logger stream
-The Logger Stream is used for testing the output of the service. Since streams are written to in order, it is suggested that the Logger Stream be the first stream in the list so that you can see output before it being written to more complex streams like API.
-
-Example:
-``` xml
-<stream name="Logger" />
-```
+Output streams are used to send the user content retrieved from Active Directory to a specific destination. There are currently two (2) supported streams in the current version of the service: Csv and Compliance360ApiV2.
 
 #### CSV stream
-The CSV stream can be used to write the results of the LDAP query to a *.csv file. This is very useful for testing out the queries and configuration to ensure the specified jobs are configured correctly.
+The CSV Stream is used to write the results of the LDAP query to a CSV file. This is very useful for testing out the queries and configuration to ensure the specified jobs are configured correctly. 
 
 Example:
 ``` xml
@@ -292,12 +271,13 @@ Example:
 </stream>
 ```
 Required CSV stream settings values:
-* __path:__ The full file path to the *.csv file that should be created.
+* __path:__ The full file path to the CSV file that should be created.
 
 
 #### Compliance360ApiV2 Stream
 The Compliance 360Apiv2 Stream handles the REST API calls to the Compliance 360 application, creating, updating and deleting employee accounts based on the Active Directory information.
 
+Example:
 ``` xml
 <stream name="Compliance360ApiV2">
   <settings>
@@ -305,6 +285,8 @@ The Compliance 360Apiv2 Stream handles the REST API calls to the Compliance 360 
     <setting name="organization" value="[ORG_NAME]" />
     <setting name="username" value="[USER_NAME]" />
     <setting name="password" value="[PASSWORD]" />
+    <setting name="culture" value="[CULTURE_CODE]" />
+    <setting name="loginIntervalMinues" value="[NUMBER_OF_MINUTES]" />
   </settings>
   <mapping>
     <map from="Main Division" to="PrimaryDivision"/>
@@ -317,29 +299,34 @@ The Compliance 360Apiv2 Stream handles the REST API calls to the Compliance 360 
     <map from="{department}" to="Department"/>
     <map from="{memberOf}" to="Groups"/>
     <map from="{manager}" to="Relationships" type="Manager"/>
-    <map from="My Company" to="Company" type="company"/>
+    <map from="{company}" to="Company" type="company"/>
     <map from="true" to="CanLogin"/>
   </mapping>
 </stream>
 ```
-#### &lt;setting&gt; Element
+#### <setting&> Element
 * __name:__ The setting name
 * __value:__ The setting value
 
-The four (4) settings listed below are required:
-* __baseAddress:__ The base URL of the Compliance 360 application.
-* __organization:__ The organization you are connecting to.
+The following settings listed below are required:
+* __baseAddress:__ The base URL of the Compliance 360 application. Use the URL for the appropriate data center for this organization. 
+    UK data center: https://uk.compliance360.com/ with Culture of en-GB
+    US data center: https://secure.compliance360.com/ with Culture of en-US
+    APAC data center: https://c3602.grc.saiglobal.com/ with Culture of en-AU
+* __organization:__ The organization you are connecting to
 * __usename:__ The user name with API access rights
 * __password:__ The user's password
+* __culture:__ The Microsoft code to identify the culture that corresponds to the data center associated with the baseAddress setting. See baseAddress setting for cultures.
+* __loginIntervalMinutes:_ The number of minutes to wait before refreshing the authentication token. This token expires after a certain amount of time and needs to be replaced when long-running sync events are occurring. By default, that is 20 minutes
 
-#### &lt;map&gt; Element
+#### <map> Element
 * __from:__ The source attribute name or statement. Attributes can be retreived with the syntax ```{ATTRIB_NAME}```. Multiple
   attributes can be used together and combined with text to achieve the desired source value.
   * Example:
     ``` xml
     <map from="{domain}\{sAMAccountName}" to="EmployeeNum"/>
     ```
-    will result in "from" value being the domain name, a slash "\\", followed by the account like saig\thomasl
+    will result in "from" value being the domain name, a slash "\", followed by the account like saig\marcol
 * __to:__ The Compliance 360 employee field name. There are several fields that are required in order for the system to function correctly.
 * Required __"to"__ fields:
   * __PrimaryDivision:__ The Compliance 360 employee base division path in the format ```[DIVISION_NAME] \ [CHILD_DIVISION_NAME]```. Please note that there is a space both before and after the slash.
@@ -352,15 +339,19 @@ The four (4) settings listed below are required:
 
 
 ## Best Practices and Notes
-* The Sync service will NOT create any missing Divisions in the Compliance 360 application. Please create the division structure before starting the sync process.
-* The service will create the following new objects if they are not present in the Compliance 360 application:
+* LDAP Sync will NOT create any missing Divisions in the Compliance 360 application. Please create the division structure before starting the sync process.
+* LDAP Sync will create the following new objects if they are not present in the Compliance 360 application:
   * Job Title
   * Department
   * User Group
   * Employee
-  * Lookup values
   * Company
-* Application logging / tracing is done using [NLog](http://nlog-project.org/). By default, the application comes preconfigured to log all errors to the "Application" event log. To troubleshoot the service, please enable the file logging at the debug level as seen below by uncommenting the "file" logger rule entry in the NLog.config file
+  
+  It will also create lookup values if they are not present in the Compliance 360 application.
+  
+###Application Logging
+  
+Application logging / tracing is done using [NLog](http://nlog-project.org/). By default, the application comes preconfigured to log all errors to the "Application" event log. To troubleshoot the service, please enable the file logging at the debug level as seen below by uncommenting the "file" logger rule entry in the NLog.config file
 ``` xml
 <?xml version="1.0" encoding="utf-8"?>
 
@@ -383,14 +374,14 @@ The four (4) settings listed below are required:
   </rules>
 </nlog>
 ```
-* The Sync service will cache Compliance 360 data information locally using isolated storage for security purposes. Please inspect the log files for the location of the cache files in the case that you need to remove them for a clean install.
+###Caching of Compliance 360 Data
+LDAP Sync will cache Compliance 360 data information locally using isolated storage for security purposes. Please inspect the log files for the location of the cache files in the case that you need to remove them for a clean install.
 
 
 ## Dependencies
 This application depends on the following frameworks (Please note that the application installer handles the installation of all dependencies):
-1. Newtonsoft.Json - for JSON processing
-2. NLog - for logging
-3. Structuremap - for dependency injection
-4. Rebex SFTP - for streaming user content to a Sftp location
-5. .NET Framework 4.7
-6. The service is designed to run on Windows Server 2012 and above.
+* Microsoft Window Server 2012 or newer with the latest .NET Framework 4.7.x installed.
+* Newtonsoft.Json - for JSON processing
+* NLog - for logging
+* Structuremap - for dependency injection
+* Rebex SFTP - for streaming user content to a Sftp location
