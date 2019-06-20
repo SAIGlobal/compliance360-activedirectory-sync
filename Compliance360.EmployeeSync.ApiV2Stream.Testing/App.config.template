@@ -43,8 +43,7 @@
             <settings>
               <setting name="baseAddress" value="" />
               <setting name="organization" value="" />
-              <setting name="username" value="" />
-              <setting name="password" value="" />
+              <setting name="integrationKey" value="" />
               <setting name="loginIntervalMinutes" value="20" />
             </settings>
             <mapping>

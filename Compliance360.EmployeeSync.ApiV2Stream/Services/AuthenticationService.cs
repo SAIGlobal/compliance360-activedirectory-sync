@@ -46,30 +46,29 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Services
             return GetHostAddressAsync(baseAddress, organization).Result;
         }
         
-        public async Task<string> LoginAsync(string baseAddress, string organization, string username, string password, string culture)
+        public async Task<string> AuthenticateAsync(string baseAddress, string organization, string integrationKey, string culture)
         {
-            Logger.Debug("Logging in to API Organization:{0} Username:{1}", organization, username);
+            Logger.Debug("Logging in to API Organization:{0} IntegrationKey:{1}", organization, integrationKey);
 
             Http.Initialize(baseAddress);
 
             var loginData = new
             {
                 organization,
-                username,
-                password,
+                integrationKey,
                 culture
             };
 
-            const string loginUri = "/API/2.0/Security/Login";
+            const string loginUri = "/API/2.0/Security/Authenticate";
 
             var resp = await Http.PostAsync<LoginResponse>(loginUri, loginData);
 
             return resp.Token;
         }
 
-        public string Login(string baseAddress, string organization, string username, string password, string culture)
+        public string Authenticate(string baseAddress, string organization, string integrationKey, string culture)
         {
-            return LoginAsync(baseAddress, organization, username, password, culture).Result;
+            return AuthenticateAsync(baseAddress, organization, integrationKey, culture).Result;
         }
 
 

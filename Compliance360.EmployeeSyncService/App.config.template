@@ -61,8 +61,7 @@
             <settings>
               <setting name="baseAddress" value="https://secure.compliance360.com" />
               <setting name="organization" value="" />
-              <setting name="username" value="" />
-              <setting name="password" value="" />
+              <setting name="integrationkey" value="" />            
               <setting name="culture" value="en-US" />
               <setting name="loginIntervalMinutes" value="20" />
             </settings>

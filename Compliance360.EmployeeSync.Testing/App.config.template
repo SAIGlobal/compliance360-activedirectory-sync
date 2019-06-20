@@ -12,8 +12,7 @@
            type="ActiveDirectory" 
            domain="" 
            ou="" 
-           userName="" 
-           password=""
+           integrationKey=""
            ldapQuery="(&amp;(objectClass=user)(objectCategory=person)(!msExchResourceMetaData=ResourceType:Room))"
            removeGroupPrefix="" 
            intervalSeconds="10"
@@ -53,8 +52,7 @@
             <settings>
               <setting name="baseAddress" value="" />
               <setting name="organization" value="" />
-              <setting name="username" value="" />
-              <setting name="password" value="" />
+              <setting name="integrationKey" value="" />            
               <setting name="culture" value="en-US" />
               <setting name="loginIntervalMinutes" value="20" />
             </settings>
