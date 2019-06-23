@@ -50,7 +50,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Testing.Services
             httpClient.Setup(h => h.GetAsync("/API/2.0/Security/OrganizationHost?organization=TEST_ORG"))
                 .Returns(Task.FromResult(hostResponse));
 
-            httpClient.Setup(h => h.PostAsync("/API/2.0/Security/Login", It.IsAny<HttpContent>()))
+            httpClient.Setup(h => h.PostAsync("/API/2.0/Security/Authenticate", It.IsAny<HttpContent>()))
                 .Returns(Task.FromResult(loginResponse));
 
             var httpDataService = new HttpDataService(logger.Object, httpClient.Object);
