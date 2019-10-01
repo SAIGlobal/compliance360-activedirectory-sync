@@ -52,7 +52,7 @@ namespace Compliance360.EmployeeSync.ApiV2Stream.Services
 
             Http.Initialize(baseAddress);
 
-            const string loginUri = "/API/2.0/Security/Authenticate";
+            string loginUri = $"/API/2.0/Security/Authenticate?organization={organization}&integrationkey={integrationKey}";
 
             var resp = await Http.GetAsync<LoginResponse>(loginUri);
 
